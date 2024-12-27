@@ -1,0 +1,107 @@
+[build-system]
+requires = [ "poetry-core>=1.0.0", "poetry-dynamic-versioning>=1.0.0,<2.0.0",]
+build-backend = "poetry_dynamic_versioning.backend"
+
+[tool.poetry]
+name = "core-automation"
+version = "0.0.6-pre.153+830e289"
+description = "Core Automation Deployment Engine Tools, SCK Module, and CLI"
+authors = [ "James Barwick <james.barwick@simple.com>",]
+license = "GPL-3.0-only"
+readme = "README.md"
+maintainers = [ "Ethan Chan <ethan.chsn@simple.com>", "Yunarta Kwee <yunarta.kwee@simple.com>",]
+include = [ "CHANGELOG.md",]
+homepage = "https://simple-jira.atlassian.net/wiki/spaces/FND/overview"
+documentation = "https://simple-jira.atlassian.net/wiki/spaces/FND/overview"
+repository = "https://bitbucket.dev.aws.simple.com/scm/fnd/simple-core-automation.git"
+keywords = [ "core-automation", "core", "sck", "simple-cloud-kit",]
+
+[[tool.poetry.source]]
+name = "nexus"
+url = "https://monster-jj.jvj28.com:9091/repository/pypi/simple/"
+priority = "primary"
+
+[[tool.poetry.source]]
+name = "PyPI"
+priority = "explicit"
+
+[tool.poetry-dynamic-versioning]
+enable = true
+bump = true
+ignore-untracked = true
+style = "semver"
+
+[tool.poetry.urls]
+"Bug Tracker" = "https://simple-jira.atlassian.net/jira/software/c/projectsFND"
+
+[tool.poetry.dependencies]
+python = "^3.12"
+requests = "^2.32.2"
+boto3 = ">=1.34.0"
+botocore = ">=1.34.0"
+pandas = "^2.2.2"
+ruamel-yaml = "^0.18.6"
+pyyaml = "^6.0.1"
+tabulate = "^0.9.0"
+cfnresponse = ">=1.1.4"
+cryptography = "^42.0.8"
+argcomplete = ">=3.3.0"
+jmespath = ">=1.0.1"
+python-dateutil = ">=2.9.0.post0"
+s3transfer = ">=0.10.1"
+six = ">=1.16.0"
+urllib3 = ">2.2.1"
+xmltodict = ">=0.13.0"
+yq = ">=3.4.3"
+fastapi = "^0.115.4"
+
+[tool.poetry.scripts]
+core = "core_automation.core:main"
+
+[tool.poetry.dependencies.core-framework]
+path = "../core-framework"
+develop = true
+
+[tool.poetry.dependencies.core-aws]
+path = "../core-aws"
+develop = true
+
+[tool.poetry.dependencies.core-azure]
+path = "../core-azure"
+develop = true
+
+[tool.poetry.dependencies.core-api]
+path = "../core-api"
+develop = true
+
+[tool.poetry.dependencies.core-invoker]
+path = "../core-invoker"
+develop = true
+
+[tool.poetry.dependencies.core-organization]
+path = "../core-organization"
+develop = true
+
+[tool.poetry-dynamic-versioning.files."core_automation/_version.py"]
+persistent-substitution = true
+initial-content = "  \"\"\"\n  This is the version informatooin for this template\n  \"\"\"\n  __version__ = \"0.0.0\"\n  __version_tuple__ = (0, 0, 0)\n"
+
+[tool.poetry.group.dev.dependencies]
+poetry = "^1.8.3"
+pytest = "^8.3.3"
+pytest-asyncio = "^0.24.0"
+pytest-cov = "^5.0.0"
+pylance = "^0.11.0"
+pylint = "^3.2.2"
+types-pyyaml = "^6.0.12.20240311"
+boto3-stubs = "^1.34.115"
+types-tabulate = "^0.9.0.20240106"
+flake8 = "^7.1.1"
+cfn-lint = "^1.18.4"
+sphinx = "^8.1.3"
+sphinx-autodoc-typehints = "^2.5.0"
+sphinxcontrib-httpdomain = "^1.8.1"
+uvicorn = "^0.32.0"
+black = "^24.10.0"
+httpx = "^0.28.0"
+pytest-dotenv = "^0.5.2"

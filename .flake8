@@ -1,0 +1,38 @@
+[flake8]
+# Maximum line length for the code
+max-line-length = 150
+
+# Exclude specific directories from linting
+exclude =
+    .git,
+    __pycache__,
+    build,
+    dist
+
+# Ignore specific warnings or errors
+# For example, E501 is the error code for line length exceeding the max length
+ignore =
+    E501,
+    W503
+
+# Set the base directory for running flake8
+# By default, it's the current directory
+# You can specify another directory if needed
+# path = src/
+
+# Show source code for each error/warning
+show-source = True
+
+# Display the count of errors/warnings
+count = True
+
+# Format the output
+# For example, use `default`, `pylint`, or `html`
+format = default
+
+# Specify the maximum complexity for cyclomatic complexity check
+max-complexity = 10
+
+# Additional plugins can be specified if needed
+# For example, for flake8-docstrings
+# docstring-convention = all

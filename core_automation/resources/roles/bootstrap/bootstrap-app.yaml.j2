@@ -1,0 +1,1009 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: CloudFormation Bootstrap Stack Applications
+Metadata:
+  Version: '0.1'
+  Licence: !Join
+    - |+
+
+    - - Copyright 2015 by Core.
+Parameters:
+  Organisation:
+    Description: Organisation Name
+    Type: String
+    Default: simple
+    AllowedValues:
+      - simple
+  Account:
+    Description: AWS Account Name
+    Type: String
+    Default: development
+    AllowedValues:
+      - development
+      - non-prod-ops
+      - prod-ops
+      - non-prod-apps
+      - prod-apps
+  Environment:
+    Description: AWS Environment
+    Type: String
+    Default: dev
+    AllowedValues:
+      - dev
+      - prd
+      - prod
+      - nonprod
+      - nprd
+  CustomResourceQueueARN:
+    Description: CustomResourceQueueARN
+    Type: String
+    Default: ''
+  CustomResourceQueueURL:
+    Description: CustomResourceQueueURL
+    Type: String
+    Default: ''
+  Vpc:
+    Description: The Id for this Vpc
+    Type: 'AWS::EC2::VPC::Id'
+    Default: ''
+    ConstraintDescription: must be a valid Vpc
+  VpcCidrBlock:
+    Description: The VpcCidrBlock for this Vpc
+    Type: String
+    Default: ''
+  Tier1aaSubnet:
+    Description: Tier1aaSubnet
+    Type: 'AWS::EC2::Subnet::Id'
+    Default: ''
+  Tier1abSubnet:
+    Description: Tier1abSubnet
+    Type: 'AWS::EC2::Subnet::Id'
+    Default: ''
+  Tier4aaSubnet:
+    Description: Tier4aaSubnet
+    Type: 'AWS::EC2::Subnet::Id'
+    Default: ''
+  Tier4abSubnet:
+    Description: Tier4abSubnet
+    Type: 'AWS::EC2::Subnet::Id'
+    Default: ''
+  DefaultSecurityGroup:
+    Description: DefaultSecurityGroup
+    Type: 'AWS::EC2::SecurityGroup::Id'
+  BastionSecurityGroup:
+    Description: BastionSecurityGroup
+    Type: 'AWS::EC2::SecurityGroup::Id'
+    Default: ''
+  BootstrapSecurityGroup:
+    Description: BootstrapSecurityGroup
+    Type: 'AWS::EC2::SecurityGroup::Id'
+    Default: ''
+  BastionAEIP:
+    Description: BastoinEIP
+    Type: String
+    Default: ''
+  KeyName:
+    Description: EC2 SSH KeyName
+    Type: 'AWS::EC2::KeyPair::KeyName'
+    Default: build
+    ConstraintDescription: must be the name of an existing EC2 KeyPair.
+  BastionInstanceType:
+    Description: Bastion Server EC2 instance type
+    Type: String
+    Default: t2.micro
+    AllowedValues:
+      - t1.micro
+      - t2.micro
+      - t2.small
+      - t2.medium
+      - m1.small
+      - m1.medium
+      - m1.large
+      - m1.xlarge
+      - m2.xlarge
+      - m2.2xlarge
+      - m2.4xlarge
+      - m3.medium
+      - m3.large
+      - m3.xlarge
+      - m3.2xlarge
+      - c1.medium
+      - c1.xlarge
+      - c3.large
+      - c3.xlarge
+      - c3.2xlarge
+      - c3.4xlarge
+      - c3.8xlarge
+      - c4.large
+      - c4.xlarge
+      - c4.2xlarge
+      - c4.4xlarge
+      - c4.8xlarge
+    ConstraintDescription: must be a valid EC2 instance type.
+  BastionAMI:
+    Description: Bastion Instance AMI Id
+    Type: 'AWS::EC2::Image::Id'
+    Default: ami-db7b39e1
+  BootstrapInstanceType:
+    Description: Bootstrap Server EC2 instance type
+    Type: String
+    Default: t2.medium
+    AllowedValues:
+      - t1.micro
+      - t2.micro
+      - t2.small
+      - t2.medium
+      - m1.small
+      - m1.medium
+      - m1.large
+      - m1.xlarge
+      - m2.xlarge
+      - m2.2xlarge
+      - m2.4xlarge
+      - m3.medium
+      - m3.large
+      - m3.xlarge
+      - m3.2xlarge
+      - c1.medium
+      - c1.xlarge
+      - c3.large
+      - c3.xlarge
+      - c3.2xlarge
+      - c3.4xlarge
+      - c3.8xlarge
+      - c4.large
+      - c4.xlarge
+      - c4.2xlarge
+      - c4.4xlarge
+      - c4.8xlarge
+    ConstraintDescription: must be a valid EC2 instance type.
+  BootstrapAMI:
+    Description: Boostrap Instance AMI Id
+    Type: 'AWS::EC2::Image::Id'
+    Default: ami-db7b39e1
+  ExternalBastionAENI:
+    Description: ExternalBastionAENI
+    Type: String
+  ExternalBastionAIp:
+    Description: ExternalBastionAIp
+    Type: String
+  ExternalBastionBENI:
+    Description: ExternalBastionBENI
+    Type: String
+  ExternalBastionBIp:
+    Description: ExternalBastionBIp
+    Type: String
+  InternalBastionAENI:
+    Description: InternalBastionAENI
+    Type: String
+  InternalBastionAIp:
+    Description: InternalBastionAIp
+    Type: String
+  InternalBastionBENI:
+    Description: InternalBastionBENI
+    Type: String
+  InternalBastionBIp:
+    Description: InternalBastionBIp
+    Type: String
+Mappings:
+  RegionAZ:
+    ap-southeast-1:
+      A: ap-southeast-1a
+      B: ap-southeast-1b
+    ap-southeast-2:
+      A: ap-southeast-2a
+      B: ap-southeast-2b
+Resources:
+  BootstrapRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - ec2.amazonaws.com
+            Action:
+              - 'sts:AssumeRole'
+      Path: /
+  BootstrapRolePolicies:
+    Type: 'AWS::IAM::Policy'
+    Properties:
+      PolicyName: BootstrapRole
+      PolicyDocument:
+        Statement:
+          - Sid: BootstrapIAMAccess
+            Action:
+              - 'iam:*'
+            Effect: Allow
+            Resource:
+              - '*'
+          - Sid: BootstrapRoute53ReadWriteAccess
+            Action:
+              - 'route53:*'
+            Effect: Allow
+            Resource:
+              - '*'
+          - Sid: BootstrapCloudWatchReadWriteAccess
+            Action:
+              - 'cloudwatch:*'
+            Effect: Allow
+            Resource:
+              - '*'
+          - Sid: BootstrapELBReadWriteAccess
+            Action:
+              - 'elasticloadbalancing:*'
+            Effect: Allow
+            Resource:
+              - '*'
+          - Sid: BootstrapAutoscalingAccess
+            Action:
+              - 'autoscaling:*'
+            Effect: Allow
+            Resource:
+              - '*'
+          - Sid: BootstrapSecurityGroupAccess
+            Action:
+              - 'ec2:CreateSecurityGroup'
+              - 'ec2:DeleteSecurityGroup'
+              - 'ec2:DescribeSecurityGroups'
+              - 'ec2:AuthorizeSecurityGroupIngress'
+              - 'ec2:RevokeSecurityGroupIngress'
+            Effect: Allow
+            Resource:
+              - '*'
+          - Sid: BootstrapAllAccess
+            Action:
+              - 'ec2:*'
+            Effect: Allow
+            Resource:
+              - '*'
+          - Sid: BootstrapSecurityGroupAccess
+            Action:
+              - 'ec2:CreateSecurityGroup'
+              - 'ec2:DeleteSecurityGroup'
+              - 'ec2:DescribeSecurityGroups'
+              - 'ec2:AuthorizeSecurityGroupIngress'
+              - 'ec2:RevokeSecurityGroupIngress'
+            Effect: Allow
+            Resource:
+              - '*'
+          - Sid: BootstrapAMIAccess
+            Action:
+              - 'ec2:CreateImage'
+              - 'ec2:RegisterImage'
+              - 'ec2:DeregisterImage'
+              - 'ec2:DescribeImages'
+              - 'ec2:ModifyImageAttribute'
+            Effect: Allow
+            Resource:
+              - '*'
+          - Sid: BootstrapSnapshotAccess
+            Action:
+              - 'ec2:CreateSnapshot'
+              - 'ec2:DeleteSnaphot'
+              - 'ec2:DescribeSnapshots'
+            Effect: Allow
+            Resource:
+              - '*'
+          - Sid: BootstrapVolumeAccess
+            Action:
+              - 'ec2:AttachVolume'
+              - 'ec2:CreateVolume'
+              - 'ec2:DeleteVolume'
+              - 'ec2:DescribeVolumes'
+              - 'ec2:DetachVolume'
+            Effect: Allow
+            Resource:
+              - '*'
+          - Sid: BootstrapInstanceAccess
+            Action:
+              - 'ec2:RunInstances'
+              - 'ec2:StartInstances'
+              - 'ec2:StopInstances'
+              - 'ec2:RebootInstances'
+              - 'ec2:TerminateInstances'
+              - 'ec2:DescribeInstances'
+              - 'ec2:CreateTags'
+            Effect: Allow
+            Resource:
+              - '*'
+          - Sid: BootstrapKeyPairAccess
+            Action:
+              - 'ec2:CreateKeyPair'
+              - 'ec2:DeleteKeyPair'
+              - 'ec2:DescribeKeyPairs'
+            Effect: Allow
+            Resource:
+              - '*'
+          - Sid: BootstrapCloudFormationAccess
+            Action:
+              - 'cloudformation:CreateStack'
+              - 'cloudformation:DeleteStack'
+              - 'cloudformation:UpdateStack'
+              - 'cloudformation:DescribeStacks'
+              - 'cloudformation:DescribeStackEvents'
+              - 'cloudformation:DescribeStackResource'
+              - 'cloudformation:DescribeStackResources'
+              - 'cloudformation:GetTemplate'
+              - 'cloudformation:GetTemplateSummary'
+              - 'cloudformation:GetStackPolicy'
+              - 'cloudformation:List*'
+              - 'cloudformation:ValidateTemplate'
+              - 'cloudformation:CreateUploadBucket'
+            Effect: Allow
+            Resource:
+              - '*'
+          - Sid: BootstrapS3Access
+            Action:
+              - 's3:Get*'
+              - 's3:List*'
+              - 's3:PutObject*'
+              - 's3:DeleteObject*'
+            Effect: Allow
+            Resource:
+              - '*'
+          - Sid: BootstrapS3BucketAccess
+            Action:
+              - 's3:ListAllMyBuckets'
+              - 's3:CreateBucket'
+            Effect: Allow
+            Resource:
+              - '*'
+          - Sid: BootstrapSQSAccess
+            Effect: Allow
+            Action:
+              - 'sqs:ChangeMessageVisibility'
+              - 'sqs:DeleteMessage'
+              - 'sqs:ReceiveMessage'
+            Resource: !Ref CustomResourceQueueARN
+          - Sid: BootstrapSNSAccess
+            Effect: Allow
+            Action:
+              - 'sns:*'
+            Resource:
+              - '*'
+      Roles:
+        - !Ref BootstrapRole
+  BootstrapRoleInstanceProfile:
+    Type: 'AWS::IAM::InstanceProfile'
+    Properties:
+      Path: /
+      Roles:
+        - !Ref BootstrapRole
+  BastionRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - ec2.amazonaws.com
+            Action:
+              - 'sts:AssumeRole'
+      Path: /
+  InstanceRolePolicies:
+    Type: 'AWS::IAM::Policy'
+    Properties:
+      PolicyName: DefaultInstancePolicy
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Action:
+              - 's3:GetObject'
+              - 's3:GetObjectVersion'
+              - 's3:ListBucketVersions'
+              - 's3:ListBucket'
+            Effect: Allow
+            Resource:
+              - !Join
+                - ''
+                - - 'arn:aws:s3:::'
+                  - !Ref Organisation
+                  - '-'
+                  - !Ref Account
+                  - '-cfg/*'
+              - !Join
+                - ''
+                - - 'arn:aws:s3:::'
+                  - !Ref Organisation
+                  - '-'
+                  - !Ref Account
+                  - '-cfg'
+              - !Join
+                - ''
+                - - 'arn:aws:s3:::'
+                  - !Ref Organisation
+                  - '-'
+                  - !Ref Account
+                  - '-scripts/*'
+              - !Join
+                - ''
+                - - 'arn:aws:s3:::'
+                  - !Ref Organisation
+                  - '-'
+                  - !Ref Account
+                  - '-scripts'
+      Roles:
+        - !Ref BastionRole
+  BastionRoleInstanceProfile:
+    Type: 'AWS::IAM::InstanceProfile'
+    Properties:
+      Path: /
+      Roles:
+        - !Ref BastionRole
+  BastionAEIPAssociation:
+    Type: 'AWS::EC2::EIPAssociation'
+    Properties:
+      EIP: !Ref BastionAEIP
+      InstanceId: !Ref BastionInstance
+  BastionInstance:
+    Type: 'AWS::EC2::Instance'
+    Metadata:
+      'AWS::CloudFormation::Init':
+        configSets:
+          default:
+            - enable-epel
+            - install-package-dependencies
+            - install-packages
+            - configure-environment
+            - enable-services
+        enable-epel:
+          commands:
+            enable-epel-repo:
+              command: yum-config-manager --enable epel
+        install-package-dependencies:
+          packages:
+            yum:
+              python-pip: []
+              python-daemon: []
+        install-packages:
+          packages:
+            yum:
+              git: []
+              puppet3: []
+        configure-environment:
+          commands:
+            puppet-module-install-saz-sudo:
+              command: puppet module install saz-sudo
+          files:
+            /etc/facter/facts.d/aws.txt:
+              content: !Join
+                - ''
+                - - |
+                    role=bastion
+                  - |
+                    platform=bootstrap
+                  - account=
+                  - !Ref Account
+                  - |+
+
+                  - datacentre=aws-
+                  - !Ref 'AWS::Region'
+                  - |+
+
+                  - organisation=
+                  - !Ref Organisation
+                  - |+
+
+                  - environment=
+                  - !Ref Environment
+                  - |+
+
+                  - security_domain=aws-
+                  - !Ref Organisation
+                  - '-'
+                  - !Ref 'AWS::Region'
+                  - '-'
+                  - !Ref Account
+                  - |+
+
+            /opt/soe/scripts/puppet/puppet-apply-bootstrap:
+              content: !Join
+                - ''
+                - - |
+                    #!/bin/bash
+                  - /usr/bin/env aws s3 --region=
+                  - !Ref 'AWS::Region'
+                  - ' cp s3://'
+                  - !Ref Organisation
+                  - '-'
+                  - !Ref Account
+                  - >
+                    -scripts/puppet/puppet-apply
+                    /opt/soe/scripts/puppet/puppet-apply
+                  - |
+                    chmod +x /opt/soe/scripts/puppet/puppet-apply
+                  - '/opt/soe/scripts/puppet/puppet-apply '
+                  - !Ref Organisation
+                  - ' '
+                  - !Ref Account
+                  - |+
+
+              mode: '000755'
+            /etc/cfn/cfn-hup.conf:
+              content: !Join
+                - ''
+                - - |
+                    [main]
+                  - stack=
+                  - !Ref 'AWS::StackId'
+                  - |+
+
+                  - region=
+                  - !Ref 'AWS::Region'
+                  - |+
+
+              mode: '000400'
+              owner: root
+              group: root
+            /etc/cfn/hooks.d/cfn-auto-reloader.conf:
+              content: !Join
+                - ''
+                - - |
+                    [cfn-auto-reloader-hook]
+                  - |
+                    triggers=post.update
+                  - >
+                    path=Resources.BastionInstance.Metadata.AWS::CloudFormation::Init
+                  - 'action=/opt/aws/bin/cfn-init -s '
+                  - !Ref 'AWS::StackId'
+                  - ' -r BastionInstance '
+                  - ' --region '
+                  - !Ref 'AWS::Region'
+                  - |+
+
+                  - |
+                    runas=root
+            /etc/profile.d/aws.sh:
+              content: !Join
+                - ''
+                - - export AWS_ORG=
+                  - !Ref Organisation
+                  - |+
+
+                  - export AWS_ACCOUNT_NAME=
+                  - !Ref Account
+                  - |+
+
+                  - export AWS_ACCOUNT_ID=
+                  - !Ref 'AWS::AccountId'
+                  - |+
+
+                  - export AWS_ENV=
+                  - !Ref Environment
+                  - |+
+
+                  - export AWS_STACK_NAME=
+                  - !Ref 'AWS::StackName'
+                  - |+
+
+                  - export AWS_STACK_ID=
+                  - !Ref 'AWS::StackId'
+                  - |+
+
+                  - export AWS_REGION=
+                  - !Ref 'AWS::Region'
+                  - |+
+
+              mode: '000755'
+        enable-services:
+          services:
+            cfn-hup:
+              enabled: 'true'
+              ensureRunning: 'true'
+              files:
+                - /etc/cfn/cfn-hup.conf
+                - /etc/cfn/hooks.d/cfn-auto-reloader.conf
+    Properties:
+      InstanceType: !Ref BastionInstanceType
+      KeyName: !Ref KeyName
+      ImageId: !Ref BastionAMI
+      IamInstanceProfile: !Ref BastionRoleInstanceProfile
+      NetworkInterfaces:
+        - NetworkInterfaceId: !Ref ExternalBastionAENI
+          DeviceIndex: '0'
+      UserData: !Base64
+        'Fn::Join':
+          - ''
+          - - |
+              #!/bin/bash -xe
+            - |
+              yum update -y
+            - |
+              # Install the files and packages from the metadata
+            - '/opt/aws/bin/cfn-init -c default -v '
+            - '--stack '
+            - !Ref 'AWS::StackName'
+            - ' --resource BastionInstance '
+            - '--region '
+            - !Ref 'AWS::Region'
+            - |+
+
+            - >
+              # Start up the cfn-hup daemon to listen for changes to the Bastion
+              Server metadata
+            - |
+              /opt/aws/bin/cfn-hup || error_exit 'Failed to start cfn-hup'
+            - |
+              # Signal the status from cfn-init
+            - '/opt/aws/bin/cfn-signal -e $? '
+            - '--stack '
+            - !Ref 'AWS::StackName'
+            - ' --resource BastionInstance '
+            - ' --region '
+            - !Ref 'AWS::Region'
+            - |+
+
+      Tags:
+        - Key: Name
+          Value: !Join
+            - '-'
+            - - bootstrap
+              - bastion
+              - !Ref Environment
+              - bastion
+              - !FindInMap
+                - RegionAZ
+                - !Ref 'AWS::Region'
+                - A
+  BootstrapInstance:
+    Type: 'AWS::EC2::Instance'
+    Metadata:
+      'AWS::CloudFormation::Init':
+        configSets:
+          default:
+            - enable-epel
+            - install-package-dependencies
+            - install-packages
+            - pre-configure-environment
+            - configure-environment
+            - enable-services
+        enable-epel:
+          commands:
+            enable-epel-repo:
+              command: yum-config-manager --enable epel
+        install-package-dependencies:
+          packages:
+            yum:
+              gcc: []
+              python27-boto: []
+              python27-devel: []
+              python27-pip: []
+              python27-daemon: []
+              python27-dateutil: []
+              python27-jmespath: []
+              python27-six: []
+          commands:
+            set-python-27:
+              command: alternatives --set python /usr/bin/python2.7
+        install-packages:
+          packages:
+            yum:
+              git: []
+              puppet3: []
+            rpm:
+              aws-cfn-resource-bridge: >-
+                https://s3-ap-southeast-2.amazonaws.com/simple-public/package/aws-cfn-resource-bridge/aws-cfn-resource-bridge-0.2-1.noarch.rpm
+          commands:
+            puppet-module-install-saz-sudo:
+              command: puppet module install saz-sudo
+            ansible:
+              command: pip install ansible
+            netaddr:
+              command: pip install netaddr
+        pre-configure-environment:
+          commands:
+            create-directories:
+              command: mkdir -p /opt/aws-cfn-bridge
+            create-cfn-init-symlink:
+              command: >-
+                readlink /etc/init.d/cfn-resource-bridge || ln -s
+                /usr/local/init/redhat/cfn-resource-bridge
+                /etc/init.d/cfn-resource-bridge
+            create-cfn-bin-symlink:
+              command: >-
+                readlink /opt/aws/bin/cfn-resource-bridge || ln -s
+                /usr/local/bin/cfn-resource-bridge
+                /opt/aws/bin/cfn-resource-bridge
+            ensure-cfn-init-executable:
+              command: chmod +x /usr/local/init/redhat/cfn-resource-bridge
+            ensure-cfn-bin-executable:
+              command: chmod +x /usr/local/bin/cfn-resource-bridge
+        configure-environment:
+          files:
+            /etc/facter/facts.d/aws.txt:
+              content: !Join
+                - ''
+                - - |
+                    role=orchestrator
+                  - |
+                    platform=bootstrap
+                  - account=
+                  - !Ref Account
+                  - |+
+
+                  - datacentre=aws-
+                  - !Ref 'AWS::Region'
+                  - |+
+
+                  - organisation=
+                  - !Ref Organisation
+                  - |+
+
+                  - environment=
+                  - !Ref Environment
+                  - |+
+
+                  - security_domain=aws-
+                  - !Ref Organisation
+                  - '-'
+                  - !Ref 'AWS::Region'
+                  - '-'
+                  - !Ref Account
+                  - |+
+
+            /opt/soe/scripts/puppet/puppet-apply-bootstrap:
+              content: !Join
+                - ''
+                - - |
+                    #!/bin/bash
+                  - /usr/bin/env aws s3 --region=
+                  - !Ref 'AWS::Region'
+                  - ' cp s3://'
+                  - !Ref Organisation
+                  - '-'
+                  - !Ref Account
+                  - >
+                    -scripts/puppet/puppet-apply
+                    /opt/soe/scripts/puppet/puppet-apply
+                  - |
+                    chmod +x /opt/soe/scripts/puppet/puppet-apply
+                  - '/opt/soe/scripts/puppet/puppet-apply '
+                  - !Ref Organisation
+                  - ' '
+                  - !Ref Account
+                  - |+
+
+              mode: '000755'
+            /etc/cfn/cfn-hup.conf:
+              content: !Join
+                - ''
+                - - |
+                    [main]
+                  - stack=
+                  - !Ref 'AWS::StackId'
+                  - |+
+
+                  - region=
+                  - !Ref 'AWS::Region'
+                  - |+
+
+              mode: '000400'
+              owner: root
+              group: root
+            /etc/cfn/hooks.d/cfn-auto-reloader.conf:
+              content: !Join
+                - ''
+                - - |
+                    [cfn-auto-reloader-hook]
+                  - |
+                    triggers=post.update
+                  - >
+                    path=Resources.BootstrapInstance.Metadata.AWS::CloudFormation::Init
+                  - 'action=/opt/aws/bin/cfn-init -s '
+                  - !Ref 'AWS::StackId'
+                  - ' -r BootstrapInstance '
+                  - ' --region '
+                  - !Ref 'AWS::Region'
+                  - |+
+
+                  - |
+                    runas=root
+            /etc/profile.d/aws.sh:
+              content: !Join
+                - ''
+                - - export AWS_ORG=
+                  - !Ref Organisation
+                  - |+
+
+                  - export AWS_ACCOUNT_NAME=
+                  - !Ref Account
+                  - |+
+
+                  - export AWS_ACCOUNT_ID=
+                  - !Ref 'AWS::AccountId'
+                  - |+
+
+                  - export AWS_ENV=
+                  - !Ref Environment
+                  - |+
+
+                  - export AWS_STACK_NAME=
+                  - !Ref 'AWS::StackName'
+                  - |+
+
+                  - export AWS_STACK_ID=
+                  - !Ref 'AWS::StackId'
+                  - |+
+
+                  - export AWS_REGION=
+                  - !Ref 'AWS::Region'
+                  - |+
+
+              mode: '000755'
+            /etc/cfn/bridge.d/stack-lookup.conf:
+              content: !Join
+                - ''
+                - - |
+                    [stack-lookup]
+                  - |
+                    resource_type=Custom::StackLookup
+                  - queue_url=
+                  - !Ref CustomResourceQueueURL
+                  - |+
+
+                  - |
+                    timeout=60
+                  - 'default_action=/opt/aws-cfn-bridge/stack-lookup '
+                  - !Ref 'AWS::Region'
+                  - ' '
+                  - !Ref 'AWS::StackName'
+            /opt/aws-cfn-bridge/stack-lookup:
+              content: !Join
+                - ''
+                - - |
+                    #!/usr/bin/python
+                  - |
+                    import boto.cloudformation
+                  - |
+                    from boto.exception import BotoServerError
+                  - |
+                    import sys
+                  - |
+                    import os
+                  - |
+                    try:
+                  - |2
+                            import simplejson as json
+                  - |
+                    except ImportError:
+                  - |2
+                            import json
+                  - |
+                    cfn = boto.cloudformation.connect_to_region(sys.argv[1])
+                  - >
+                    stack = os.getenv('Event_ResourceProperties_Stack',
+                    sys.argv[2])
+                  - |
+                    result = {}
+                  - |
+                    try:
+                  - |2
+                            stacks = cfn.describe_stacks(stack)
+                  - |2
+                            found = None
+                  - |2
+                            for stack in stacks:
+                  - |2
+                                    if stack.stack_status in ('UPDATE_COMPLETE', 'CREATE_COMPLETE'):
+                  - |2
+                                            found = stack
+                  - |2
+                                            break;
+                  - |2
+                            if not found:
+                  - |2
+                                    raise Exception("stack %s not found" % sys.argv[2] )
+                  - |2
+                            result['PhysicalResourceId'] = found.stack_id
+                  - |2
+                            result['Data'] = {}
+                  - |2
+                            result['Status'] = 'SUCCESS'
+                  - |2
+                            for output in found.outputs:
+                  - |2
+                                    result['Data'][output.key] = output.value
+                  - |2
+                            print json.dumps(result)
+                  - |2
+                            sys.exit(0)
+                  - |
+                    except BotoServerError as be:
+                  - |2
+                            result['Status'] = 'FAILED'
+                  - |2
+                            result['Reason'] = be.body
+                  - |2
+                            print result
+                  - |2
+                            sys.exit(2)
+                  - |
+                    except Exception as e:
+                  - |2
+                            result['Status'] = 'FAILED'
+                  - |2
+                            result['Reason'] = e
+                  - |2
+                            print result
+                  - |2
+                            sys.exit(2)
+              mode: '000755'
+        enable-services:
+          services:
+            sysvinit:
+              cfn-resource-bridge:
+                enabled: 'true'
+                ensureRunning: 'true'
+                files:
+                  - /etc/cfn/bridge.d/stack-lookup.conf
+                  - /opt/aws-cfn-bridge/stack-lookup
+              cfn-hup:
+                enabled: 'true'
+                ensureRunning: 'true'
+                files:
+                  - /etc/cfn/cfn-hup.conf
+                  - /etc/cfn/hooks.d/cfn-auto-reloader.conf
+    Properties:
+      InstanceType: !Ref BootstrapInstanceType
+      SecurityGroupIds:
+        - !Ref BootstrapSecurityGroup
+        - !Ref DefaultSecurityGroup
+      SubnetId: !Ref Tier4aaSubnet
+      KeyName: !Ref KeyName
+      IamInstanceProfile: !Ref BootstrapRoleInstanceProfile
+      ImageId: !Ref BootstrapAMI
+      UserData: !Base64
+        'Fn::Join':
+          - ''
+          - - |
+              #!/bin/bash -xe
+            - |
+              yum update -y
+            - |
+              yum update -y aws-cfn-bootstrap
+            - |
+              # Install the files and packages from the metadata
+            - '/opt/aws/bin/cfn-init -c default -v '
+            - '--stack '
+            - !Ref 'AWS::StackName'
+            - ' --resource BootstrapInstance '
+            - '--region '
+            - !Ref 'AWS::Region'
+            - |+
+
+            - >
+              # Start up the cfn-hup daemon to listen for changes to the
+              Bootstrap Server metadata
+            - |
+              /opt/aws/bin/cfn-hup || error_exit 'Failed to start cfn-hup'
+            - |
+              # Signal the status from cfn-init
+            - '/opt/aws/bin/cfn-signal -e $? '
+            - '--stack '
+            - !Ref 'AWS::StackName'
+            - ' --resource BootstrapInstance '
+            - ' --region '
+            - !Ref 'AWS::Region'
+            - |+
+
+      Tags:
+        - Key: Name
+          Value: !Join
+            - '-'
+            - - bootstrap
+              - bootstrap
+              - !Ref Environment
+              - orchestrator
+              - !FindInMap
+                - RegionAZ
+                - !Ref 'AWS::Region'
+                - A
+Outputs:
+  BootstrapInstance:
+    Description: BootstrapInstance
+    Value: !Ref BootstrapInstance
+  BastionInstance:
+    Description: BastionInstance
+    Value: !Ref BastionInstance
