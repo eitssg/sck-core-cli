@@ -4,7 +4,7 @@ build-backend = "poetry_dynamic_versioning.backend"
 
 [tool.poetry]
 name = "sck-core-cli"
-version = "0.0.2"
+version = "0.0.3"
 description = "Core Automation Deployment Engine Tools, SCK Module, and CLI"
 authors = [ "James Barwick <james.barwick@simple.com>",]
 license = "GPL-3.0-only"
@@ -48,14 +48,28 @@ urllib3 = "^2.2.3"
 xmltodict = ">=0.13.0"
 yq = ">=3.4.3"
 fastapi = "^0.115.4"
-sck-core-db = "^0.0.2"
-sck-core-organization = "^0.0.2"
-sck-core-framework = "^0.0.2"
-sck-core-invoker = "^0.0.2"
-sck-core-api = "^0.0.2"
 
+[tool.poetry.dependencies.sck-core-api]
+path = "../sck-core-api"
+depend = true
+
+[tool.poetry.dependencies.sck-core-invoker]
+path = "../sck-core-invoker"
+depend = true
+
+[tool.poetry.dependencies.sck-core-organization]
+path = "../sck-core-organization"
+depend = true
+
+[tool.poetry.dependencies.sck-core-db]
+path = "../sck-core-db"
+depend = true
+
+[tool.poetry.dependencies.sck-core-framework]
+path = "../sck-core-framework"
+depend = true
 [tool.poetry.scripts]
-core = "core_automation.core:main"
+core = "core_cli.core:main"
 
 [[tool.poetry.source]]
 name = "nexus"
