@@ -51,23 +51,23 @@ fastapi = "^0.115.4"
 
 [tool.poetry.dependencies.sck-core-api]
 path = "../sck-core-api"
-depend = true
+develop = true
 
 [tool.poetry.dependencies.sck-core-invoker]
 path = "../sck-core-invoker"
-depend = true
+develop = true
 
 [tool.poetry.dependencies.sck-core-organization]
 path = "../sck-core-organization"
-depend = true
+develop = true
 
 [tool.poetry.dependencies.sck-core-db]
 path = "../sck-core-db"
-depend = true
+develop = true
 
 [tool.poetry.dependencies.sck-core-framework]
 path = "../sck-core-framework"
-depend = true
+develop = true
 [tool.poetry.scripts]
 core = "core_cli.core:main"
 
