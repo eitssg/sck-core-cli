@@ -10,7 +10,7 @@ authors = [ "James Barwick <james.barwick@simple.com>",]
 license = "GPL-3.0-only"
 readme = "README.md"
 maintainers = [ "Ethan Chan <ethan.chsn@simple.com>", "Yunarta Kwee <yunarta.kwee@simple.com>",]
-include = [ "CHANGELOG.md",]
+include = [ "CHANGELOG.md","core_cli/_version.py",]
 homepage = "https://simple-jira.atlassian.net/wiki/spaces/FND/overview"
 documentation = "https://simple-jira.atlassian.net/wiki/spaces/FND/overview"
 repository = "https://bitbucket.dev.aws.simple.com/scm/fnd/simple-core-automation.git"
@@ -62,7 +62,7 @@ name = "nexus"
 url = "https://monster-jj.jvj28.com:9091/repository/pypi/simple/"
 priority = "primary"
 
-[tool.poetry-dynamic-versioning.files."core_automation/_version.py"]
+[tool.poetry-dynamic-versioning.files."core_cli/_version.py"]
 persistent-substitution = true
 initial-content = "  \"\"\"\n  This is the version informatooin for this template\n  \"\"\"\n  __version__ = \"0.0.0\"\n  __version_tuple__ = (0, 0, 0)\n"
 
