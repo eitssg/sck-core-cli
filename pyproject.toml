@@ -4,7 +4,7 @@ build-backend = "poetry_dynamic_versioning.backend"
 
 [tool.poetry]
 name = "sck-core-ui"
-version = "0.0.6-pre.153+830e289"
+version = "0.0.1"
 description = "Core Automation Deployment Engine Tools, SCK Module, and CLI"
 authors = [ "James Barwick <james.barwick@simple.com>",]
 license = "GPL-3.0-only"
@@ -14,7 +14,7 @@ include = [ "CHANGELOG.md",]
 homepage = "https://simple-jira.atlassian.net/wiki/spaces/FND/overview"
 documentation = "https://simple-jira.atlassian.net/wiki/spaces/FND/overview"
 repository = "https://bitbucket.dev.aws.simple.com/scm/fnd/simple-core-automation.git"
-keywords = [ "core-automation", "core", "sck", "simple-cloud-kit",]
+keywords = ["sck", "core", "aws", "cloud", "automation"]
 
 [[tool.poetry.packages]]
 include = "core_cli"
@@ -30,39 +30,32 @@ style = "semver"
 
 [tool.poetry.dependencies]
 python = "^3.12"
-requests = "^2.32.2"
+requests = "^2.32.3"
 boto3 = ">=1.35.87"
 botocore = ">=1.35.87"
 pandas = "^2.2.2"
 ruamel-yaml = "^0.18.6"
-pyyaml = "^6.0.1"
+pyyaml = "^6.0.2"
 tabulate = "^0.9.0"
 cfnresponse = ">=1.1.4"
 cryptography = "^42.0.8"
 argcomplete = ">=3.3.0"
-jmespath = ">=1.0.1"
+jmespath = "^1.0.1"
 python-dateutil = ">=2.9.0.post0"
 s3transfer = ">=0.10.1"
 six = ">=1.16.0"
-urllib3 = ">2.2.1"
+urllib3 = "^2.2.3"
 xmltodict = ">=0.13.0"
 yq = ">=3.4.3"
 fastapi = "^0.115.4"
+sck-core-db = "^0.0.1"
+sck-core-organization = "^0.0.1"
+sck-core-framework = "^0.0.1"
+sck-core-invoker = "^0.0.1"
+sck-core-api = "^0.0.1"
 
 [tool.poetry.scripts]
 core = "core_automation.core:main"
-
-[tool.poetry.dependencies.sck-core-framework]
-path = "../sck-core-framework"
-develop = true
-
-[tool.poetry.dependencies.sck-core-api]
-path = "../sck-core-api"
-develop = true
-
-[tool.poetry.dependencies.sck-core-invoker]
-path = "../sck-core-invoker"
-develop = true
 
 [[tool.poetry.source]]
 name = "nexus"
@@ -74,17 +67,17 @@ persistent-substitution = true
 initial-content = "  \"\"\"\n  This is the version informatooin for this template\n  \"\"\"\n  __version__ = \"0.0.0\"\n  __version_tuple__ = (0, 0, 0)\n"
 
 [tool.poetry.group.dev.dependencies]
-poetry = "^1.8.3"
+poetry = ">=1.8.5"
 pytest = "^8.3.3"
-pytest-asyncio = "^0.24.0"
-pytest-cov = "^5.0.0"
-pylance = "^0.11.0"
-types-pyyaml = "^6.0.12.20240311"
+pytest-asyncio = "^0.25.0"
+pytest-cov = "^6.0.0"
+pylance = "^0.21.0"
+types-pyyaml = "^6.0.12.20240917"
 boto3-stubs = ">=1.35.87"
 types-tabulate = "^0.9.0.20240106"
 flake8 = "^7.1.1"
 cfn-lint = "^1.18.4"
-uvicorn = "^0.32.0"
+uvicorn = "^0.34.0"
 black = "^24.10.0"
-httpx = "^0.28.0"
+httpx = "^0.28.1"
 pytest-dotenv = "^0.5.2"
