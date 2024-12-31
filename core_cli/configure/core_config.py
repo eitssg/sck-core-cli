@@ -8,45 +8,13 @@ import json
 from typing import Optional
 import boto3
 from botocore.exceptions import ClientError
-from core_helper.aws import org_client, iam_client
+from core_helper.aws import org_client, iam_client, assume_role
 from .client_vars import get_region_role
 
-
-aws_session = None
-aws_credentials: Optional[dict] = None
+aws_credentials = None
 
 
-def get_session():
-    """Get the AWS session"""
-    global aws_session
-    if aws_session:
-        return aws_session
-    else:
-        aws_session = boto3.Session()
-        return aws_session
-
-
-def assume_role_arn(role_arn) -> dict:
-    global aws_credentials
-
-    role_session_name = "CoreAutomationConfigureSession"
-    aws_session = get_session()
-    sts_client = aws_session.client("sts")
-    response = sts_client.assume_role(
-        RoleArn=role_arn, RoleSessionName=role_session_name, DurationSeconds=3600
-    )
-    if (
-        response["ResponseMetadata"]["HTTPStatusCode"] == 200
-        and "Credentials" in response
-    ):
-        creds = response["Credentials"]
-    else:
-        creds = None
-
-    return creds
-
-
-def assume_role(**kwargs) -> Optional[dict]:
+def assume_automation_role(**kwargs) -> Optional[dict]:
     """assume the core automation role, if there is no role because you haven't even created it, then we try to assume 'Developer' role"""
     global aws_credentials
 
@@ -69,7 +37,7 @@ def assume_role(**kwargs) -> Optional[dict]:
         if role_name:
             role_arn = f"arn:aws:iam::{account_number}:role/{role_name}"
             print(f"Attempting to assume '{role_name}' role: {role_arn}")
-            aws_credentials = assume_role_arn(role_arn)
+            aws_credentials = assume_role(role_arn)
             if aws_credentials:
                 return aws_credentials
 
@@ -77,7 +45,7 @@ def assume_role(**kwargs) -> Optional[dict]:
         role_arn = f"arn:aws:iam::{account_number}:role/RBAC_Developer"
         print(f"Attempting to assume 'RBAC_Developer' role: {role_arn}")
 
-        aws_credentials = assume_role_arn(role_arn)
+        aws_credentials = assume_role(role_arn)
 
     except ClientError as e:
         if "AccessDenied" in str(e):
@@ -88,21 +56,6 @@ def assume_role(**kwargs) -> Optional[dict]:
             raise OSError(f"Error assuming role {e}") from e
 
     return aws_credentials
-
-
-def get_client(name, **kwargs):
-    """get a client by name"""
-    session = get_session()
-    credentials = assume_role(**kwargs)
-    if credentials:
-        return session.client(
-            name,
-            aws_access_key_id=credentials["AccessKeyId"],
-            aws_secret_access_key=credentials["SecretAccessKey"],
-            aws_session_token=credentials["SessionToken"],
-        )
-    else:
-        return session.client(name)
 
 
 def get_configuration_file():
