@@ -13,15 +13,12 @@ def execute_event(event: dict) -> dict:
     """
     Execute the event in either local mode or in AWS lambda mode.
     """
+    arn = "arn:aws:lambda:us-east-1:123456789012:function:core-execute"
+    role = "CoreAutomationExecuteRole"
+
     if is_local_mode():
-
         result = lambda_handler(event)
-
     else:
-
-        arn = "arn:aws:lambda:us-east-1:123456789012:function:core-execute"
-        role = "CoreAutomationExecuteRole"
-
-        result = aws.invoke_lambda(arn, event, role)
+        result = aws.invoke_lambda(arn, event, role=role)
 
     return result if result is not None else {}

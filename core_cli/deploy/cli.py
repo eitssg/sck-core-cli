@@ -11,18 +11,9 @@ import yaml
 import argparse
 import json
 
+import core_framework as util
 
-import core_deployspec_compiler.handler as lambda_function
-
-
-def __to_yaml(object):
-    """Some sane defaults."""
-    return yaml.safe_dump(
-        object,
-        default_flow_style=False,
-        width=1000,
-        # default_style='"'
-    )
+from core_invoker import handler as invoker_handler
 
 
 def _get_args():
@@ -79,7 +70,7 @@ def run(args):
         client_vars = yaml.safe_load(f.read())
     for key in client_vars:
         os.environ[key] = "{}".format(client_vars[key])
-    print("client_vars:\n{}".format(__to_yaml(client_vars)))
+    print("client_vars:\n{}".format(util.to_yaml(client_vars)))
 
     accounts_file = "../{}-config/accounts.yaml".format(args.client)
     print("account file name ", accounts_file)
@@ -107,8 +98,8 @@ def run(args):
         print("Setting AWS_PROFILE={}".format(args.aws_profile))
         os.environ["AWS_PROFILE"] = args.aws_profile
 
-    if args.mode == "local" and args.app_path is None:
-        raise ValueError("Must have app_path is mode=local.")
+    if args.mode == "local" and args.data_path is None:
+        raise ValueError("Must have data_path is mode=local.")
 
     branch_short_name = re.sub(r"[^a-z0-9\\-]", "-", args.branch.lower())[0:20].rstrip(
         "-"
@@ -123,7 +114,7 @@ def run(args):
             ),
             "VersionId": None,
             "Mode": args.mode,
-            "AppPath": args.app_path,
+            "DataPath": args.data_path,
         },
         "DeploymentDetails": {
             "Portfolio": args.portfolio,
@@ -135,9 +126,9 @@ def run(args):
         },
     }
 
-    print("cli invoke event:\n{}".format(__to_yaml(event)))
-    response = lambda_function.handler(event, {})
-    print("cli handler response:\n{}".format(__to_yaml(response)))
+    print("cli invoke event:\n{}".format(util.to_yaml(event)))
+    response = invoker_handler(event, {})
+    print("cli handler response:\n{}".format(util.to_yaml(response)))
 
     response_string = json.dumps(response, indent=4, sort_keys=True)
 

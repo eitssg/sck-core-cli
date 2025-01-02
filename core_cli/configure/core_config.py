@@ -37,7 +37,7 @@ def assume_automation_role(**kwargs) -> Optional[dict]:
         if role_name:
             role_arn = f"arn:aws:iam::{account_number}:role/{role_name}"
             print(f"Attempting to assume '{role_name}' role: {role_arn}")
-            aws_credentials = assume_role(role_arn)
+            aws_credentials = assume_role(role=role_arn)
             if aws_credentials:
                 return aws_credentials
 
@@ -45,7 +45,7 @@ def assume_automation_role(**kwargs) -> Optional[dict]:
         role_arn = f"arn:aws:iam::{account_number}:role/RBAC_Developer"
         print(f"Attempting to assume 'RBAC_Developer' role: {role_arn}")
 
-        aws_credentials = assume_role(role_arn)
+        aws_credentials = assume_role(role=role_arn)
 
     except ClientError as e:
         if "AccessDenied" in str(e):
@@ -126,7 +126,7 @@ def get_organizations_information(**kwargs):
     account_name = ""
     try:
         region, role = get_region_role(**kwargs)
-        client = org_client(region, role)
+        client = org_client(region=region, role=role)
         orginfo = client.describe_organization()
         if "Organization" in orginfo:
             organization_id = orginfo["Organization"]["Id"]
@@ -173,7 +173,7 @@ def list_organizational_units(root_id, **kwargs):
     try:
         # Create an Organizations client
         region, role = get_region_role(**kwargs)
-        client = org_client(region, role)
+        client = org_client(region=region, role=role)
 
         # Initialize pagination
         paginator = client.get_paginator("list_organizational_units_for_parent")
@@ -198,7 +198,7 @@ def list_organization_accounts(**kwargs):
     try:
         # Create an Organizations client
         region, role = get_region_role(**kwargs)
-        client = org_client(region, role)
+        client = org_client(region=region, role=role)
 
         # Initialize pagination
         paginator = client.get_paginator("list_accounts")
@@ -219,7 +219,7 @@ def list_roles_with_keywords(substrings, **kwargs):
     try:
         # Create an IAM client
         region, role = get_region_role(**kwargs)
-        client = iam_client(region, role)
+        client = iam_client(region=region, role=role)
 
         # Initialize pagination
         paginator = client.get_paginator("list_roles")
