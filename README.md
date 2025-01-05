@@ -84,6 +84,12 @@ Next, evaluate the build tool scripts for windows (.ps1) powershell, or mac/linu
 
 In vsCode or Intellij, add each of the 14 submodules to the workspace. (adding in the 'path')
 
+Switch all project TOML files to "develop" mode by setting project dependeces "develop=true" in the 14 TOML files.
+
+```bash
+python ./prebuild.py
+```
+
 run "build-all.sh" to install and build all submodules and install all dependencies
 
 ```bash
