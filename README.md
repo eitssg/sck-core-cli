@@ -43,24 +43,16 @@ Usage: core [command] [<tasks>] [<actions>] [<options>]
 
 The above commands replace the core-automation/bin shell scripts and python scripts into this "core" deployment object.
 
-This object is installed with:
+## Installation
 
 ```bash
-# python -m pip install sck-mod-core
+# python -m venv .venv
+# source .venv/bin/activate
+# pip install simple-cloud-kit
 # core --help
-  Simple Cloud Kit (c) 2024 EITS
-  Core Module v1.2
-  ...help text
-```
-
-If you also have the sck installed, core can be called from the sck command line
-
-```bash
-# python -m pip install simple-cloud-kit
-# sck core --help
-  Simple Cloud Kit (c) 2024 EITS
-  Core Module v1.2
-  ...help text
+  Simple Cloud Kit (c) 2024 Exclusive Inofmration Technology Service
+  Core 0.0.1-pre01934jf
+  ...help text (coming soon!!!)
 ```
 
 ## Setup / Contributing
@@ -69,48 +61,12 @@ If you also have the sck installed, core can be called from the sck command line
 
 #### step 1
 
-We will create a venv in the parent folder and then you will need to use this as the python interpreter.
-
-In this folder, we have told *pyenv* that we wish to use python 3.12.3
-
-From the sck-mod-core folder
-```shell
-python -m venv ../venv
-```
+Create a venv in the parent folder and then you will need to use this as the python interpreter.
 
 #### step 2
 
-In IntelliJ or VSCode, select this python as the interpreter.  Once done, run activate the environment and
-run the poetry_setup.sh shell script.
+In IntelliJ or VSCode, select this python as the interpreter.  
 
-```shell
-source ../venv/bin/activate
-source poetry_setup.sh
-```
+Next, evaluate the build tool scripts for windwos (.ps1) powershell, or linux (.sh) bash (not zsh or sh...bash)
 
-#### Scripts
-
-*associate-hosted-zones-to-vpcs.py*
-Finds and associates private hosted zones to services VPCs.
-
-*delete-default-vpcs.py*
-Deletes the defalut VPC from a list of accounts and regions.
-
-*deploy-core-automation-resources.sh*
-Deploys the core-automation-resources.yaml stack to every listed account. This is required during inital account bootstrapping to provide the action runner appropriate access to each sub account.
-
-*deploy-runner.sh*
-Deploys the action runner using CloudFormation
-
-*deploy-invoker.sh*
-Deploys the S3 invoker Lambda using CloudFormation
-
-*install-lambda-dependencies.py*
-Installs pip packages and copies over common packages for each Lambda function in /lambdas
-
-    * Performs a pip install of all packages listed in /lambdas/<function>/lib/pip.txt
-    * Copies common package for all packages listed in /lambdas/<function>/lib/common.txt
-    * Common packages are stored in /lambdas/_common (deprecated) will be moved to /core-framework/ as a python module.  This module should be added to the requirements.txt for each lambda function.
-    *
-
-Run this before deploying to AWS
+Talk to me via Github (jbarwick@eits.com.sg)
