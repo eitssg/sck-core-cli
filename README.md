@@ -64,7 +64,7 @@ The above commands replace the core-automation/bin shell scripts and python scri
 Clone the repositry:
 
 ```bash
-git clone https://github.com/etissg/simple-cloud-kit.git
+git clone https://github.com/eitssg/simple-cloud-kit.git
 cd simple-cloud-kit
 python -m venv .venv
 ```
