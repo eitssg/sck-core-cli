@@ -1,4 +1,4 @@
-#  SCK Module - CORE
+#  Simple Cloud Kit CLI
 
 # REMODELING THIS LIBRARY.  IT IS STILL DRAFT
 
