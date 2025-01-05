@@ -61,12 +61,27 @@ The above commands replace the core-automation/bin shell scripts and python scri
 
 #### step 1
 
-Create a venv in the parent folder and then you will need to use this as the python interpreter.
+Clone the repositry:
+
+```bash
+git clone https://github.com/etissg/simple-cloud-kit.git
+cd simple-cloud-kit
+python -m venv .venv
+```
+There are 14 git submodules in this repo.  Sync all the submodules and pull all the subprojects
 
 #### step 2
 
 In IntelliJ or VSCode, select this python as the interpreter.  
 
 Next, evaluate the build tool scripts for windwos (.ps1) powershell, or linux (.sh) bash (not zsh or sh...bash)
+
+In vsCode or Intellij, add each of the 14 submoduels to the workspace.
+
+run "build-all.sh" to install and build all submodules and install all dependencies
+
+```bash
+source ./build-all.sh
+```
 
 Talk to me via Github (jbarwick@eits.com.sg)
