@@ -1,27 +1,6 @@
 #  SCK Module - CORE
 
-Thie CORE module is the primary interface files.  It's intent is to replace
-these commands:
-
-* associate-hosted-zones-to-vpcs.py
-* clean-lambda-dependencies.py
-* clean-s3-app-branch.py
-* delete-default-vpcs.py
-* deploy-custom-resource-handler.sh
-* deploy.sh
-* describe_stack.py
-* find-appspec-stacks.py
-* find-compiling-components.py
-* find-git-pulls.py
-* install-lambda-dependencies.py
-* migrate-api-db.py
-* print_deployment_status.py
-* run-local.sh
-* run-v2.sh
-* run.sh
-* set-iam-password-policy.py
-* teardown-failed-stacks.py
-* teardown.sh
+# REMODELING THIS LIBRARY.  IT IS STILL DRAFT
 
 On the commandline you will first type in 'core' followed by command:
 
