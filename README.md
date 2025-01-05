@@ -74,9 +74,15 @@ There are 14 git submodules in this repo.  Sync all the submodules and pull all 
 
 In IntelliJ or VSCode, select this python as the interpreter.  
 
-Next, evaluate the build tool scripts for windwos (.ps1) powershell, or linux (.sh) bash (not zsh or sh...bash)
+install poetry
+```bash
+source .venv/bin/activate
+pip install poetry poetry-dynamic-versioning
+```
 
-In vsCode or Intellij, add each of the 14 submodules to the workspace.
+Next, evaluate the build tool scripts for windows (.ps1) powershell, or mac/linux (.sh) bash (not zsh or sh...bash)
+
+In vsCode or Intellij, add each of the 14 submodules to the workspace. (adding in the 'path')
 
 run "build-all.sh" to install and build all submodules and install all dependencies
 
