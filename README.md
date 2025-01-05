@@ -76,7 +76,7 @@ In IntelliJ or VSCode, select this python as the interpreter.
 
 Next, evaluate the build tool scripts for windwos (.ps1) powershell, or linux (.sh) bash (not zsh or sh...bash)
 
-In vsCode or Intellij, add each of the 14 submoduels to the workspace.
+In vsCode or Intellij, add each of the 14 submodules to the workspace.
 
 run "build-all.sh" to install and build all submodules and install all dependencies
 
