@@ -90,6 +90,8 @@ Switch all project TOML files to "develop" mode by setting project dependeces "d
 python ./prebuild.py
 ```
 
+If you wish to switch back to "publish" production mode, open `versions.json` and set the *develop* attribute to `falsee` and re-run the prebuild.py script
+
 run "build-all.sh" to install and build all submodules and install all dependencies
 
 ```bash
