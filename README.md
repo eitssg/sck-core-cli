@@ -50,7 +50,7 @@ The above commands replace the core-automation/bin shell scripts and python scri
 # source .venv/bin/activate
 # pip install simple-cloud-kit
 # core --help
-  Simple Cloud Kit (c) 2024 Exclusive Inofmration Technology Service
+  Simple Cloud Kit (c) 2024 Exclusive Information Technology Service
   Core 0.0.1-pre01934jf
   ...help text (coming soon!!!)
 ```
