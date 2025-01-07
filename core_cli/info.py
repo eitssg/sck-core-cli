@@ -1,11 +1,17 @@
+import json
+
+from .cmdparser import ExecuteCommandsType
+
 from ._version import __version__
 
 
 def execute_info(**kwargs):
-    print(f"Version {__version__}")
+    print(f"Version {__version__}\n\n")
+
+    print(json.dumps(kwargs, indent=4))
 
 
-def get_info_command(subparsers):
+def get_info_command(subparsers) -> ExecuteCommandsType:
 
     DESCRIPTION = "Display information about the core subsystem"
 

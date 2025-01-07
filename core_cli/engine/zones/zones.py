@@ -1,5 +1,7 @@
 """ CLI for managing zones """
 
+from ...cmdparser import ExecuteCommandsType
+
 from .associate import associate_zones
 
 
@@ -8,7 +10,7 @@ def action_verify(**kwargs):
     print(f"Verify: {dict(kwargs)}")
 
 
-ACTIONS = {
+ACTIONS: ExecuteCommandsType = {
     "associate": (
         "Ensure all zones are registered as private zones in Route53",
         associate_zones,
@@ -17,7 +19,7 @@ ACTIONS = {
 }
 
 
-def add_zones_parser(subparsers):
+def add_zones_parser(subparsers) -> ExecuteCommandsType:
     """add the clean parser"""
 
     description = "List Landing Zones / accounts / fact"

@@ -1,6 +1,10 @@
 import boto3
+
 from botocore.exceptions import ClientError
+
 from boto3.dynamodb.conditions import Key, Attr
+
+from ..cmdparser import ExecuteCommandsType
 
 client_session = None
 client_credentials = None
@@ -76,7 +80,7 @@ def delete_portfolio(**kwargs):
     print("Delete Portfolio")
 
 
-TASKS = {
+TASKS: ExecuteCommandsType = {
     "list": ("List all portfolios", list_portfolios),
     "add": ("Add new portfolio", add_portfolio),
     "update": ("Update portfolio", update_portfolio),
@@ -91,7 +95,7 @@ def execute_portfolio(**kwargs):
         TASKS[action][1](**kwargs)
 
 
-def get_portfolio_command(subparsers):
+def get_portfolio_command(subparsers) -> ExecuteCommandsType:
     """add the portfolio parser"""
 
     description = "Manage portfolios"

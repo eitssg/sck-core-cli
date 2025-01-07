@@ -1,15 +1,16 @@
-""" mange role polic """
+""" mange role policy """
 
 import boto3
 import json
 
+from ..cmdparser import ExecuteCommandsType
 
-def ensure_user_can_assume_role(client_account, role_name, user_arn):
+
+def ensure_user_can_assume_role(client_account, role_name, user_arn):  # noqa E501
     # Initialize the boto3 client for IAM
     iam_client = boto3.client("iam")
 
     # Get the current trust policy of the role
-    role_arn = f"arn:aws:iam::{client_account}:role/{role_name}"
     try:
         response = iam_client.get_role(RoleName=role_name)
         trust_policy = response["Role"]["AssumeRolePolicyDocument"]
@@ -98,17 +99,20 @@ def list_user(**kwargs):
     print(kwargs)
 
 
-CHOICES = {
+CHOICES: ExecuteCommandsType = {
     "add": ("Add User", add_user),
     "remove": ("Remove User", remove_user),
     "list": ("List User", list_user),
 }
 
 
-def add_user_parser(parser, cmd, description):
+def get_user_tasks(parser) -> ExecuteCommandsType:
     """add the user parser"""
+
+    description = "Manage user accounts"
+
     subparser = parser.add_parser(
-        cmd,
+        "user",
         description=description,
         choices=CHOICES,
         usage="core organization user [<unit>] [<options>]",
@@ -132,6 +136,8 @@ def add_user_parser(parser, cmd, description):
     subparser.add_argument(
         "-r", "--role", default="core-automation-role", help="Role name", required=False
     )
+
+    return {"user": (description, execute_user)}
 
 
 def execute_user(**kwargs):

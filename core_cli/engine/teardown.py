@@ -1,4 +1,7 @@
-def add_teardown_parser(subparsers) -> dict:
+from ..cmdparser import ExecuteCommandsType
+
+
+def add_teardown_parser(subparsers) -> ExecuteCommandsType:
     """add the source parser"""
 
     description = (

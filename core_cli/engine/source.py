@@ -1,5 +1,7 @@
 from .._version import __version__
 
+from ..cmdparser import ExecuteCommandsType
+
 
 def get_epilog():
     """return the epilog"""
@@ -10,7 +12,7 @@ Copyright (c) 2024. EI
 """
 
 
-def add_source_parser(subparsers):
+def add_source_parser(subparsers) -> ExecuteCommandsType:
     """add the source parser"""
 
     description = "Manage automatin engine source clode"

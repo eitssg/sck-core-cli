@@ -2,6 +2,8 @@
 
 import os
 
+from ...cmdparser import ExecuteCommandsType
+
 
 def get_epilog():
     """return the epilog"""
@@ -65,7 +67,7 @@ def get_default_units(aslist: bool = False):
     return units
 
 
-UNITS = {
+UNITS: ExecuteCommandsType = {
     "all": ("Everything", unit_all),
     "invoker": ("Invoker Lambdas", unit_invoker),
     "runner": ("Runner Lambdas", unit_runner),
@@ -78,7 +80,7 @@ UNITS = {
 }
 
 
-def add_deploy_parser(subparsers) -> dict:
+def add_deploy_parser(subparsers) -> ExecuteCommandsType:
     """Create parser for the command line for the deploy command"""
 
     description = "Manage and deploy the Core Automation subsystem"

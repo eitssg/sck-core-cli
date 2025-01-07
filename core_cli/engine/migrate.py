@@ -1,4 +1,7 @@
-def add_migrate_parser(subparsers, description):
+from ..cmdparser import ExecuteCommandsType
+
+
+def add_migrate_parser(subparsers) -> ExecuteCommandsType:
     """add the source parser"""
 
     description = "API DB migration"

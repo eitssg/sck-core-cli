@@ -6,6 +6,20 @@ import boto3
 from botocore.exceptions import ClientError, NoCredentialsError
 from jinja2 import Environment, FileSystemLoader, TemplateNotFound
 
+import core_framework as util
+
+from ..cmdparser import ExecuteCommandsType
+from .._version import __version__
+
+from ..exceptions import OrganizationNotSetException
+from ..common import (
+    get_input,
+    get_iam_user_name,
+    get_organization_info,
+    get_account_info,
+    check_admin_privileges,
+)
+
 
 def create_trust_policy(iam, role_name, resources_dir):
     """create the trust policy on the provided role"""
@@ -115,7 +129,7 @@ def create_access_policy(iam, session, role_name, resources_dir):
     except ClientError as e1:
         raise OSError(
             f"An AWS error occurred while attaching the policy to the role: {e1.response['Error']['Message']}"
-        ) from e
+        ) from e1
 
 
 def create_roles(**kwargs):
@@ -260,12 +274,61 @@ def unit_all(**kwargs):
 
 def unit_resources(**kwargs):
     """execute the resource tasks"""
-    print("Resources")
+
+    print(f"Core Automation Resource Initialization v{__version__}\n")
+
+    user_name = get_iam_user_name()
+
+    print(f"Welcome {user_name}!\n")
+
+    aws_profile = util.get_aws_profile()
+
+    print(f'You will be running the initilizer Using AWS Profile: "{aws_profile}"\n')
+
+    org_info = get_organization_info()
+
+    print("Organization Information\n")
+
+    print(f"   Organization Name: {org_info['Name']}")
+    print(f"   Organization ID  : {org_info['Id']}")
+    print(f"   Master Account   : {org_info['AccountId']}")
+    print(f"   Master Email     : {org_info['Email']}")
+
+    aws_account_id = kwargs["user"]["account"]
+    account_info = get_account_info(aws_account_id)
+
+    print("\nWe will initialize core automation in:\n")
+
+    print(f"   AWS Account Name : {account_info["Name"]}")
+    print(f"   AWS Account ID   : {account_info["Id"]}")
+    print(f"   AWS Account Email: {account_info["Email"]}")
+
+    is_admin = check_admin_privileges(user_name)
+
+    if not is_admin:
+        print("\nYou do not have administrator privileges in this account.")
+        print("Please run this command from an account with administrator privileges.")
+        print("Perhaps choose a different AWS_PROFILE.\n")
+        print("Aborted")
+        return
+
+    print(
+        "\nCongratulations! We have checked and you are an admin!\nYou may continue with the initialization.\n"
+    )
+
+    result = get_input("Is this what you want?", ["yes", "No"], "No")
+    if result.lower() != "yes":
+        print("Aborted")
+        return
+
+    print("\nOK!  Let's go!\n\n<resources>")
+
+    print("\nDone.\n")
 
 
-CHOICES = {
+CHOICES: ExecuteCommandsType = {
     "all": (
-        "Initilize the Core platform and deploy things such as the custom resource",
+        "Initilize the Core platform.",
         unit_all,
     ),
     "resources": ("Deploys common CloudFormation Resources", unit_resources),
@@ -273,10 +336,10 @@ CHOICES = {
 }
 
 
-def add_init_parser(subparsers):
+def add_init_parser(subparsers) -> ExecuteCommandsType:
     """add the clean parser"""
 
-    description = "Initialize the Core platform and deploy things such as the custom resource handler"
+    description = "Initialize the Core platform."
 
     subparser = subparsers.add_parser(
         "init",
@@ -301,9 +364,26 @@ def add_init_parser(subparsers):
 
 
 def execute_init(**kwargs):
-    """execute the command"""
-    task = kwargs.get("unit", None)
-    if task:
-        CHOICES[task][1](**kwargs)
-    else:
-        print("No task specified")
+    """execute the command" """
+    try:
+
+        task = kwargs.get("unit", None)
+        if task:
+            CHOICES[task][1](**kwargs)
+        else:
+            print("No task specified")
+
+    except OrganizationNotSetException:
+        print(
+            "AWS Organizations is not enabled in this account.\n\n"
+            "You must use organizations with Core-Automation as it relies\n"
+            "on organization information to manage service control policy and\n"
+            "other organization level controls.\n\n"
+            'Please use the "core org" command line tools to assist you with\n'
+            "setting up your organization.\n\n"
+            "You may install core automation in any organization or child account,\n"
+            "but you must first add the child account to the organization.\n\n"
+        )
+    except Exception as e:
+        print(f"Error: {e}")
+        raise e

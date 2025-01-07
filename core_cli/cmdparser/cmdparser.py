@@ -1,25 +1,9 @@
+from typing import Callable
 import os
 import argparse
 import gettext
 
-from core_framework.constants import (
-    ENV_TASKS,
-    ENV_UNITS,
-    ENV_AWS_PROFILE,
-    ENV_AUTOMATION_TYPE,
-    ENV_CLIENT_NAME,
-    ENV_CLIENT,
-    ENV_SCOPE,
-    ENV_PORTFOLIO,
-    ENV_APP,
-    ENV_BRANCH,
-    ENV_BUILD,
-    ENV_BUCKET_NAME,
-    ENV_BUCKET_REGION,
-    ENV_INVOKER_LAMBDA_NAME,
-    ENV_INVOKER_LAMBDA_REGION,
-)
-
+from ..environment import get_environment
 from .._version import __version__
 
 locale_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), "..", "locale")
@@ -28,27 +12,22 @@ gettext.textdomain("sck_core")
 _ = gettext.gettext
 
 
+ExecuteCommandsType = dict[str, tuple[str, Callable]]
+
+
 def get_epilog():
     """
     Return the footer for the help text
     """
+
+    envs = ""
+    for k, v in get_environment(True).items():
+        envs += f"{k} = {v}\n"
+
     return f"""\n
 Environment Variables:
-    {ENV_TASKS} = {os.getenv(ENV_TASKS, '')}
-    {ENV_UNITS} = {os.getenv(ENV_UNITS, '')}
-    {ENV_AWS_PROFILE} = {os.getenv(ENV_AWS_PROFILE, '')}
-    {ENV_AUTOMATION_TYPE} = {os.getenv(ENV_AUTOMATION_TYPE, '')}
-    {ENV_CLIENT_NAME} = {os.getenv(ENV_CLIENT_NAME, '')}
-    {ENV_CLIENT} = {os.getenv(ENV_CLIENT, '')}
-    {ENV_SCOPE} = {os.getenv(ENV_SCOPE, '')}
-    {ENV_PORTFOLIO} = {os.getenv(ENV_PORTFOLIO, '')}
-    {ENV_APP} = {os.getenv(ENV_APP, '')}
-    {ENV_BRANCH} = {os.getenv(ENV_BRANCH, '')}
-    {ENV_BUILD} = {os.getenv(ENV_BUILD, '')}
-    {ENV_BUCKET_NAME} = {os.getenv(ENV_BUCKET_NAME, '')}
-    {ENV_BUCKET_REGION} = {os.getenv(ENV_BUCKET_REGION, '')}
-    {ENV_INVOKER_LAMBDA_NAME} = {os.getenv(ENV_INVOKER_LAMBDA_NAME, '')}
-    {ENV_INVOKER_LAMBDA_REGION} = {os.getenv(ENV_INVOKER_LAMBDA_REGION, '')}
+
+{envs}
 
 Copyright (c) 2024 Core Developer. All rights reserved.
  \n

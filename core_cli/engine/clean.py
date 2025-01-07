@@ -6,6 +6,8 @@ import re
 import boto3
 from botocore.exceptions import ClientError
 
+from ..cmdparser import ExecuteCommandsType
+
 
 def assume_role(profile, account_id, role_name):
     """rbac into the organization account"""
@@ -21,7 +23,7 @@ def assume_role(profile, account_id, role_name):
         raise OSError(f"Error assuming role: {e}") from e
 
 
-def add_clean_parser(subparsers):
+def add_clean_parser(subparsers) -> ExecuteCommandsType:
     """add the clean parser"""
 
     description = "Delete S3 files for a given branch of an app"

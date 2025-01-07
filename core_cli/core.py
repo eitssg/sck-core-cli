@@ -3,7 +3,7 @@ Core Automation application entry points
 """
 
 import sys
-from core_automation import register_module, parse_args, execute, __version__
+from core_cli import register_module, parse_args, execute, __version__
 
 
 def core_module(args):

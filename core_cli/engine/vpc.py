@@ -1,4 +1,7 @@
-def add_vpc_parser(subparsers):
+from ..cmdparser import ExecuteCommandsType
+
+
+def add_vpc_parser(subparsers) -> ExecuteCommandsType:
     """add the clean parser"""
 
     description = "Manage default VPC's in all zones listed in the account registry"

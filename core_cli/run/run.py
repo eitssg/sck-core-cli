@@ -3,6 +3,7 @@
 import os
 import re
 from typing import Callable
+from ..cmdparser import ExecuteCommandsType
 
 from core_framework.constants import (
     ENV_TASKS,
@@ -85,7 +86,7 @@ def make_defaults(data: dict) -> dict:
     return data
 
 
-def get_run_command(subparsers) -> dict:
+def get_run_command(subparsers) -> ExecuteCommandsType:
     """
     Add the run parser to the Core Automation commntds
     """
@@ -117,15 +118,6 @@ def get_run_command(subparsers) -> dict:
     master_region = os.getenv("MASTER_REGION", "ap-southeast-1")
     scope_prefix = os.getenv("SCOPE_PREFIX", os.getenv("SCOPE_PREFIX", ""))
 
-    client = os.getenv("CLIENT")
-    aws_profile = os.getenv("AWS_PROFILE")
-
-    run_parser.add_argument(
-        "-c",
-        "--client",
-        default=client,
-        help=f"Client name, used for resource prefixes. Default: {client}",
-    )
     run_parser.add_argument("-s", "--scope", default=scope_prefix, help="Scope name")
     run_parser.add_argument(
         "-p", "--portfolio", default=os.getenv("PORTFOLIO"), help="Portfolio name"
@@ -136,11 +128,6 @@ def get_run_command(subparsers) -> dict:
     )
     run_parser.add_argument(
         "-n", "--build", default=os.getenv("BUILD"), help="Build name"
-    )
-    run_parser.add_argument(
-        "--aws-profile",
-        default=aws_profile,
-        help=f"AWS profile name. Default: {aws_profile}",
     )
     run_parser.add_argument(
         "--bucket-name", default=os.getenv("BUCKET_NAME"), help="S3 bucket name"

@@ -1,5 +1,7 @@
 """ Module that process app management commands """
 
+from ..cmdparser import ExecuteCommandsType
+
 
 def action_describe(**kwargs):
     """describe the application"""
@@ -21,7 +23,7 @@ def action_status(**kwargs):
     print("Status")
 
 
-ACTIONS = {
+ACTIONS: ExecuteCommandsType = {
     "describe": (
         "Reads JSON file from [stdin] and generates a stack description",
         action_describe,
@@ -41,7 +43,7 @@ ACTIONS = {
 }
 
 
-def add_app_parser(subparsers):
+def add_app_parser(subparsers) -> ExecuteCommandsType:
     """add the clean parser"""
 
     description = "Manage applications database / facts"

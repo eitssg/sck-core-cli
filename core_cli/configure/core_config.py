@@ -8,7 +8,9 @@ import json
 from typing import Optional
 import boto3
 from botocore.exceptions import ClientError
-from core_helper.aws import org_client, iam_client, assume_role
+
+import core_helper.aws as aws
+
 from .client_vars import get_region_role
 
 aws_credentials = None
@@ -37,7 +39,7 @@ def assume_automation_role(**kwargs) -> Optional[dict]:
         if role_name:
             role_arn = f"arn:aws:iam::{account_number}:role/{role_name}"
             print(f"Attempting to assume '{role_name}' role: {role_arn}")
-            aws_credentials = assume_role(role=role_arn)
+            aws_credentials = aws.assume_role(role=role_arn)
             if aws_credentials:
                 return aws_credentials
 
@@ -45,7 +47,7 @@ def assume_automation_role(**kwargs) -> Optional[dict]:
         role_arn = f"arn:aws:iam::{account_number}:role/RBAC_Developer"
         print(f"Attempting to assume 'RBAC_Developer' role: {role_arn}")
 
-        aws_credentials = assume_role(role=role_arn)
+        aws_credentials = aws.assume_role(role=role_arn)
 
     except ClientError as e:
         if "AccessDenied" in str(e):
@@ -126,7 +128,7 @@ def get_organizations_information(**kwargs):
     account_name = ""
     try:
         region, role = get_region_role(**kwargs)
-        client = org_client(region=region, role=role)
+        client = aws.org_client(region=region, role=role)
         orginfo = client.describe_organization()
         if "Organization" in orginfo:
             organization_id = orginfo["Organization"]["Id"]
