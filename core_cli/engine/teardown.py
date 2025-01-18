@@ -10,7 +10,6 @@ def add_teardown_parser(subparsers) -> ExecuteCommandsType:
 
     subparser = subparsers.add_parser(
         "teardown",
-        usage="core engine teardown [<options>]",
         description=description,
         help=description,
     )

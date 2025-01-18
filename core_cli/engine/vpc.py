@@ -8,7 +8,6 @@ def add_vpc_parser(subparsers) -> ExecuteCommandsType:
 
     subparser = subparsers.add_parser(
         "vpc",
-        usage="core engine vpc [<options>]",
         description=description,
         help=description,
     )

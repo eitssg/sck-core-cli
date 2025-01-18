@@ -1,0 +1,238 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: CloudFormation template to create an S3 bucket with a secure bucket policy.
+
+Parameters:
+  ScopePrefix:
+    Type: String
+    Default: ""
+
+  OrganizationId:
+    Description: Organization ID
+    Type: String
+
+  Client:
+    Type: String
+    AllowedPattern: "^[a-z]+$"
+    Default: "eits"
+
+  Portfolio:
+    Type: String
+    Default: "core"
+
+  App:
+    Type: String
+    Default: "roles"
+
+  Branch:
+    Type: String
+    Default: "master"
+
+  Build:
+    Type: String
+
+  Environment:
+    Type: String
+    Default: "prod"
+
+  AutomationBucketName:
+    Type: String
+    Description: Automation bucket name
+
+  ArtefactsBucketName:
+    Type: String
+    Description: The name of the artefacts bucket
+    Default: ""
+
+Conditions:
+  CreateArtefactsBucket: !And
+    - !Not [!Equals [!Ref ArtefactsBucketName, ""]]
+    - !Not [!Equals [!Ref AutomationBucketName, !Ref ArtefactsBucketName]]
+
+Resources:
+
+  AutomationBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Ref AutomationBucketName
+      AccessControl: Private
+      VersioningConfiguration:
+        Status: Enabled
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+      LifecycleConfiguration:
+        Rules:
+          - Id: MoveToInfrequentAccess
+            Status: Enabled
+            Prefix: ""
+            Transitions:
+              - StorageClass: STANDARD_IA
+                TransitionInDays: 30
+      Tags:
+        - Key: "Scope"
+          Value: !Ref ScopePrefix
+        - Key: "Client"
+          Value: !Ref Client
+        - Key: "Portfolio"
+          Value: !Ref Portfolio
+        - Key: "App"
+          Value: !Ref App
+        - Key: "Branch"
+          Value: !Ref Branch
+        - Key: "Build"
+          Value: !Ref Build
+        - Key: "Environment"
+          Value: !Ref Environment
+
+  AutomationBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref AutomationBucket
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Sid: "AllowCoreAdminRole"
+            Effect: Allow
+            Principal:
+              AWS:
+                - !Sub "arn:aws:iam::${AWS::AccountId}:role/${ScopePrefix}CoreAutomationApiRead"
+                - !Sub "arn:aws:iam::${AWS::AccountId}:role/${ScopePrefix}CoreAutomationApiWrite"
+                - !Sub "arn:aws:iam::${AWS::AccountId}:role/${ScopePrefix}CorePipelineControl"
+                - !Sub "arn:aws:iam::${AWS::AccountId}:role/${ScopePrefix}CorePipelineProvisioning"
+            Action:
+              - 's3:GetObject'
+              - 's3:PutObject'
+              - 's3:DeleteObject'
+              - 's3:ListBucket'
+            Resource:
+              - !Sub 'arn:aws:s3:::${AutomationBucket}'
+              - !Sub 'arn:aws:s3:::${AutomationBucket}/*'
+
+          - Sid: "DelegateReadAccess"
+            Effect: "Allow"
+            Principal: "*"
+            Action:
+              - 's3:GetObject'
+              - 's3:ListBucket'
+            Resource:
+              - !Sub 'arn:aws:s3:::${AutomationBucket}'
+              - !Sub 'arn:aws:s3:::${AutomationBucket}/*'
+            Condition:
+              StringEquals:
+                aws:PrincipalOrgID: !Ref OrganizationId
+
+  ArtefactsBucket:
+    Type: AWS::S3::Bucket
+    Condition: CreateArtefactsBucket
+    Properties:
+      BucketName: !Ref ArtefactsBucketName
+      AccessControl: Private
+      VersioningConfiguration:
+        Status: Enabled
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+      LifecycleConfiguration:
+        Rules:
+          - Id: MoveToInfrequentAccess
+            Status: Enabled
+            Prefix: ""
+            Transitions:
+              - StorageClass: STANDARD_IA
+                TransitionInDays: 30
+      Tags:
+        - Key: "Scope"
+          Value: !Ref ScopePrefix
+        - Key: "Client"
+          Value: !Ref Client
+        - Key: "Portfolio"
+          Value: !Ref Portfolio
+        - Key: "App"
+          Value: !Ref App
+        - Key: "Branch"
+          Value: !Ref Branch
+        - Key: "Build"
+          Value: !Ref Build
+        - Key: "Environment"
+          Value: !Ref Environment
+
+  ArtefactsBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Condition: CreateArtefactsBucket
+    Properties:
+      Bucket: !Ref ArtefactsBucket
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Sid: "AllowCoreAdminRole"
+            Effect: Allow
+            Principal:
+              AWS:
+                - !Sub "arn:aws:iam::${AWS::AccountId}:role/${ScopePrefix}CoreAutomationApiRead"
+                - !Sub "arn:aws:iam::${AWS::AccountId}:role/${ScopePrefix}CoreAutomationApiWrite"
+                - !Sub "arn:aws:iam::${AWS::AccountId}:role/${ScopePrefix}CorePipelineControl"
+                - !Sub "arn:aws:iam::${AWS::AccountId}:role/${ScopePrefix}CorePipelineProvisioning"
+            Action:
+              - 's3:GetObject'
+              - 's3:PutObject'
+              - 's3:DeleteObject'
+              - 's3:ListBucket'
+            Resource:
+              - !Sub 'arn:aws:s3:::${ArtefactsBucket}'
+              - !Sub 'arn:aws:s3:::${ArtefactsBucket}/*'
+
+          - Sid: "DelegateReadAccess"
+            Effect: "Allow"
+            Principal: "*"
+            Action:
+              - 's3:GetObject'
+              - 's3:ListBucket'
+            Resource:
+              - !Sub 'arn:aws:s3:::${ArtefactsBucket}'
+              - !Sub 'arn:aws:s3:::${ArtefactsBucket}/*'
+            Condition:
+              StringEquals:
+                aws:PrincipalOrgID: !Ref OrganizationId
+
+Outputs:
+  AutomationBucketName:
+    Description: Automation bucket name
+    Value: !Ref AutomationBucket
+    Export:
+      Name: !Sub "${ScopePrefix}AutomationBucketName"
+
+  AutomationBucketArn:
+    Description: Automation bucket ARN
+    Value: !GetAtt AutomationBucket.Arn
+    Export:
+      Name: !Sub "${ScopePrefix}AutomationBucketArn"
+
+  ArtefactsBucketName:
+    Description: Artefacts bucket name
+    Value: !If
+      - CreateArtefactsBucket
+      - !Ref ArtefactsBucket
+      - !Ref AutomationBucket
+    Export:
+      Name: !Sub "${ScopePrefix}ArtefactsBucketName"
+
+  ArtefactsBucketArn:
+    Description: Artefacts bucket ARN
+    Value: !If
+      - CreateArtefactsBucket
+      - !GetAtt ArtefactsBucket.Arn
+      - !GetAtt AutomationBucket.Arn
+    Export:
+      Name: !Sub "${ScopePrefix}ArtefactsBucketArn"

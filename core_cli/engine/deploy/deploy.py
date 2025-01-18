@@ -71,12 +71,10 @@ UNITS: ExecuteCommandsType = {
     "all": ("Everything", unit_all),
     "invoker": ("Invoker Lambdas", unit_invoker),
     "runner": ("Runner Lambdas", unit_runner),
+    "execute": ("Execute Lambdas", unit_runner),
     "compiler": ("Component anddeployspe compiler Lambdas", unit_compiler),
-    "api-legacy": ("Legacy API Lambdas and DynamoDB tables", unit_legacy),
-    "api-lambda": ("API Lambda", unit_lambda),
-    "api-db": ("API DynamoDB tables", unit_apidb),
+    "api": ("API Lambda", unit_lambda),
     "codecommit": ("CodeCommit Lambdas", unit_codecommit),
-    "facts": ("Facts in S3", unit_facts),
 }
 
 
@@ -90,7 +88,6 @@ def add_deploy_parser(subparsers) -> ExecuteCommandsType:
     parser = subparsers.add_parser(
         "deploy",
         description=description,
-        usage="core engine deploy [<untis>] [<options>]",
         choices=UNITS,
         epilog=get_epilog(),
         help=description,

@@ -31,7 +31,6 @@ def add_clean_parser(subparsers) -> ExecuteCommandsType:
     subparser = subparsers.add_parser(
         "clean",
         description=description,
-        usage="core engine clean [<options>]",
         help=description,
     )
     subparser.set_group_title(0, "Clean tasks")

@@ -50,7 +50,6 @@ def add_app_parser(subparsers) -> ExecuteCommandsType:
 
     subparser = subparsers.add_parser(
         "app",
-        usage="core engine app [<action>] [<args>]",
         description=description,
         help=description,
     )

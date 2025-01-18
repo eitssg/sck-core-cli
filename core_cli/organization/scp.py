@@ -5,14 +5,11 @@ from rich.table import Table
 
 import core_helper.aws as aws
 
-from ..common import (
-    get_account_info,
-    get_input,
-)
+from ..common import get_account_info, get_input, cprint, jprint
 
 from ..cmdparser.cmdparser import ExecuteCommandsType
 
-from .common import cprint, jprint, exexecution_check
+from .common import exexecution_check
 
 
 def detach_policy_from_account(policy_id: str, account_id: str):

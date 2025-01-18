@@ -28,7 +28,6 @@ def add_zones_parser(subparsers) -> ExecuteCommandsType:
         "zones",
         description=description,
         choices=ACTIONS,
-        usage="core engine zones [<action>] [<options>]",
         help=description,
     )
     zones_parser.set_group_title(0, "Zone actions")

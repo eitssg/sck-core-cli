@@ -1,9 +1,11 @@
 """
 Core Automation application entry points
 """
-
 import sys
-from core_cli import register_module, parse_args, execute, __version__
+from dotenv import load_dotenv
+load_dotenv(override=True)
+
+from core_cli import register_module, parse_args, execute, __version__  # noqa: E402
 
 
 def core_module(args):

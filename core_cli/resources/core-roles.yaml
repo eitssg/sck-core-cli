@@ -1,0 +1,286 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: CloudFormation template to create Core Automation API roles
+
+Parameters:
+  ScopePrefix:
+    Type: String
+    Default: ""
+    AllowedPattern: "^([a-z]+-)*$"
+  Client:
+    Type: String
+    AllowedPattern: "^[a-z]+$"
+    Default: "eits"
+  Portfolio:
+    Type: String
+    Default: "core"
+  App:
+    Type: String
+    Default: "roles"
+  Branch:
+    Type: String
+    Default: "master"
+  Build:
+    Type: String
+  Environment:
+    Type: String
+    Default: "prod"
+  ClientsTableName:
+    Type: String
+    Default: core-automation-clients
+  PortfoliosTableName:
+    Type: String
+    Default: core-automation-portfolios
+  AppsTableName:
+    Type: String
+    Default: core-automation-apps
+  ZonesTableName:
+    Type: String
+    Default: core-automation-zones
+  BucketName:
+    Type: String
+  ArtefactBucketName:
+    Type: String
+    Default: ""
+
+Conditions:
+  UseArtefactsBucket: !And
+    - !Not [!Equals [!Ref ArtefactBucketName, ""]]
+    - !Not [!Equals [!Ref BucketName, !Ref ArtefactBucketName]]
+
+Resources:
+  # Cross-account role assumed by the automation to do its work
+  CorePipelineProvisioningRole:
+    Type: "AWS::IAM::Role"
+    Properties:
+      RoleName:
+        Fn::Sub: "${ScopePrefix}CorePipelineProvisioning"
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: "Allow"
+            Principal:
+              AWS: !Sub "arn:aws:iam::${AWS::AccountId}:root"
+            Action: "sts:AssumeRole"
+      Path: "/"
+      ManagedPolicyArns:
+        - "arn:aws:iam::aws:policy/AdministratorAccess"
+      Tags:
+        - Key: "Scope"
+          Value: !Ref ScopePrefix
+        - Key: "Client"
+          Value: !Ref Client
+        - Key: "Portfolio"
+          Value: !Ref Portfolio
+        - Key: "App"
+          Value: !Ref App
+        - Key: "Branch"
+          Value: !Ref Branch
+        - Key: "Build"
+          Value: !Ref Build
+        - Key: "Environment"
+          Value: !Ref Environment
+
+  CoreAutomationApiReadRole:
+    Type: "AWS::IAM::Role"
+    Properties:
+      RoleName:
+        Fn::Sub: "${ScopePrefix}CoreAutomationApiRead"
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: "Allow"
+            Principal:
+              AWS: !Sub "arn:aws:iam::${AWS::AccountId}:root"
+            Action: "sts:AssumeRole"
+      Policies:
+        - PolicyName: "CoreAutomationApiReadPolicy"
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: "Allow"
+                Action:
+                  - "dynamodb:BatchGetItem"
+                  - "dynamodb:ConditionCheckItem"
+                  - "dynamodb:Scan"
+                  - "dynamodb:Query"
+                  - "dynamodb:DescribeTimeToLive"
+                  - "dynamodb:DescribeTable"
+                  - "dynamodb:GetShardIterator"
+                  - "dynamodb:GetItem"
+                  - "dynamodb:GetRecords"
+                Resource:
+                  - !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${ClientsTableName}"
+                  - !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${PortfoliosTableName}"
+                  - !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${AppsTableName}"
+                  - !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${ZonesTableName}"
+      Tags:
+        - Key: "Scope"
+          Value: !Ref ScopePrefix
+        - Key: "Client"
+          Value: !Ref Client
+        - Key: "Portfolio"
+          Value: !Ref Portfolio
+        - Key: "App"
+          Value: !Ref App
+        - Key: "Branch"
+          Value: !Ref Branch
+        - Key: "Build"
+          Value: !Ref Build
+        - Key: "Environment"
+          Value: !Ref Environment
+
+  CoreAutomationApiWriteRole:
+    Type: "AWS::IAM::Role"
+    Properties:
+      RoleName:
+        Fn::Sub: "${ScopePrefix}CoreAutomationApiWrite"
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: "Allow"
+            Principal:
+              AWS: !Sub "arn:aws:iam::${AWS::AccountId}:root"
+            Action: "sts:AssumeRole"
+      Policies:
+        - PolicyName: "CoreAutomationApiWritePolicy"
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: "Allow"
+                Action:
+                  - "dynamodb:BatchGetItem"
+                  - "dynamodb:UpdateTimeToLive"
+                  - "dynamodb:ConditionCheckItem"
+                  - "dynamodb:PutItem"
+                  - "dynamodb:DeleteItem"
+                  - "dynamodb:Scan"
+                  - "dynamodb:Query"
+                  - "dynamodb:UpdateItem"
+                  - "dynamodb:DescribeTimeToLive"
+                  - "dynamodb:DescribeTable"
+                  - "dynamodb:GetShardIterator"
+                  - "dynamodb:GetItem"
+                  - "dynamodb:GetRecords"
+                Resource:
+                  - !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${ClientsTableName}"
+                  - !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${PortfoliosTableName}"
+                  - !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${AppsTableName}"
+                  - !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${ZonesTableName}"
+      Tags:
+        - Key: "Scope"
+          Value: !Ref ScopePrefix
+        - Key: "Client"
+          Value: !Ref Client
+        - Key: "Portfolio"
+          Value: !Ref Portfolio
+        - Key: "App"
+          Value: !Ref App
+        - Key: "Branch"
+          Value: !Ref Branch
+        - Key: "Build"
+          Value: !Ref Build
+        - Key: "Environment"
+          Value: !Ref Environment
+
+  # LAMBDA Execution Role.  Can assume "pipeline provisioning"
+  # TODO - this should be scoped to the pipeline user.  NOT global admin.
+  CorePipelineControlRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName:
+        Fn::Sub: "${ScopePrefix}CorePipelineControl"
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      Path: /
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+      Policies:
+        - PolicyName: AssumeCrossAccountProvisioningRoles
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - sts:AssumeRole
+                Resource:
+                  - !Sub "arn:aws:iam::*:role/${ScopePrefix}CorePipelineProvisioning"
+              - Effect: Allow
+                Action:
+                  - s3:GetObject
+                  - s3:GetObjectVersion
+                  - s3:PutObject
+                Resource: !If [UseArtefactsBucket, [!Sub "arn:aws:s3:::${BucketName}/*", !Sub "arn:aws:s3:::${ArtefactBucketName}/*"], [!Sub "arn:aws:s3:::${BucketName}/*"]]
+              - Effect: Allow
+                Action: "lambda:Invoke*"
+                Resource:
+                  Fn::Sub: "arn:aws:lambda:*:${AWS::AccountId}:function:${ScopePrefix}core-automation-*"
+      Tags:
+        - Key: "Scope"
+          Value: !Ref ScopePrefix
+        - Key: "Client"
+          Value: !Ref Client
+        - Key: "Portfolio"
+          Value: !Ref Portfolio
+        - Key: "App"
+          Value: !Ref App
+        - Key: "Branch"
+          Value: !Ref Branch
+        - Key: "Build"
+          Value: !Ref Build
+        - Key: "Environment"
+          Value: !Ref Environment
+Outputs:
+  CorePipelineControlRoleName:
+    Description: PipelineControl role name
+    Value: !Ref CorePipelineControlRole
+    Export:
+      Name: !Sub "${ScopePrefix}CorePipelineControlRoleName"
+
+  CorePipelineControlRoleArn:
+    Description: "ARN of the PipelineControlRole"
+    Value: !GetAtt CorePipelineControlRole.Arn
+    Export:
+      Name: !Sub "${ScopePrefix}CorePipelineControlRoleArn"
+
+  CorePipelineProvisioningRoleName:
+    Description: Pipeline provisioning role name
+    Value: !Ref CorePipelineProvisioningRole
+    Export:
+      Name: !Sub "${ScopePrefix}CorePipelineProvisioningRoleName"
+
+  CorePipelineProvisioningRoleArn:
+    Description: "ARN of the PipelineProvisioningRole"
+    Value: !GetAtt CorePipelineProvisioningRole.Arn
+    Export:
+      Name: !Sub "${ScopePrefix}CorePipelineProvisioningRoleArn"
+
+  CoreAutomationApiReadRoleName:
+    Description: CoreAutomationApiReadRole role name
+    Value: !Ref CoreAutomationApiReadRole
+    Export:
+      Name: !Sub "${ScopePrefix}CoreAutomationApiReadRoleName"
+
+  CoreAutomationApiReadRoleArn:
+    Description: "ARN of the CoreAutomationApiReadRole"
+    Value: !GetAtt CoreAutomationApiReadRole.Arn
+    Export:
+      Name: !Sub "${ScopePrefix}CoreAutomationApiReadRoleArn"
+
+  CoreAutomationApiWriteRoleName:
+    Description: CoreAutomationApiWriteRole role name
+    Value: !Ref CoreAutomationApiWriteRole
+    Export:
+      Name: !Sub "${ScopePrefix}CoreAutomationApiWriteRoleName"
+
+  CoreAutomationApiWriteRoleArn:
+    Description: "ARN of the CoreAutomationApiWriteRole"
+    Value: !GetAtt CoreAutomationApiWriteRole.Arn
+    Export:
+      Name: !Sub "${ScopePrefix}CoreAutomationApiWriteRoleArn"

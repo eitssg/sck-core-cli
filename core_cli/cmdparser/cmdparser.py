@@ -3,7 +3,6 @@ import os
 import argparse
 import gettext
 
-from ..environment import get_environment
 from .._version import __version__
 
 locale_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), "..", "locale")
@@ -19,15 +18,7 @@ def get_epilog():
     """
     Return the footer for the help text
     """
-
-    envs = ""
-    for k, v in get_environment(True).items():
-        envs += f"{k} = {v}\n"
-
-    return f"""\n
-Environment Variables:
-
-{envs}
+    return """\n
 
 Copyright (c) 2024 Core Developer. All rights reserved.
  \n

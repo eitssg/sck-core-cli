@@ -21,7 +21,6 @@ def add_source_parser(subparsers) -> ExecuteCommandsType:
 
     subparser = subparsers.add_parser(
         "source",
-        usage="core engine source [<action>] [<args>]",
         description=prolog,
         epilog=get_epilog(),
         help=description,

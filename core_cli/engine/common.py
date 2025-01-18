@@ -2,13 +2,7 @@ import core_framework as util
 
 from .._version import __version__
 
-from ..common import (
-    get_iam_user_name,
-    get_organization_info,
-    get_account_info,
-    check_admin_privileges,
-    cprint
-)
+from ..common import cprint, get_account_info, get_iam_user_name, check_admin_privileges, get_organization_info
 
 
 def exexecution_check(kwargs):

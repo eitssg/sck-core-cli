@@ -1,0 +1,158 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Automation resources
+
+Parameters:
+
+  Client:
+    Description: Client name
+    Type: String
+    AllowedPattern: "^[a-z]+$"
+
+  ScopePrefix:
+    Description: Automation scope prefix (scope name followed by a hyphen)
+    Type: String
+    Default: ""
+    AllowedPattern: "^([a-z]+-)*$"
+
+Resources:
+  # Used to trigger app deployments, for Jenkins
+  JenkinsAutomationUser:
+    Type: AWS::IAM::User
+    Properties:
+      UserName:
+        Fn::Sub: "${ScopePrefix}automation-jenkins"
+      Path: /
+      Policies:
+        # Allow deployment / teardown of automation resources
+        - PolicyName: AutomationDeploymentPolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - lambda:*
+                  - states:*
+                  - iam:*
+                  - cloudformation:*
+                  - dynamodb:*
+                  - logs:*
+                Resource: "*"
+        - PolicyName: WriteAutomationBucket
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - s3:PutObject
+                Resource:
+                  - Fn::Sub: "arn:aws:s3:::${ScopePrefix}${Client}-core-automation-*/packages/*"
+                  - Fn::Sub: "arn:aws:s3:::${ScopePrefix}${Client}-core-automation-*/artefacts/*"
+                  - Fn::Sub: "arn:aws:s3:::${ScopePrefix}${Client}-core-automation-*/artifacts/*"
+                  - Fn::Sub: "arn:aws:s3:::${ScopePrefix}${Client}-core-automation-*/files/*"
+              - Effect: Allow
+                Action:
+                  - s3:GetObject
+                Resource:
+                  - Fn::Sub: "arn:aws:s3:::${ScopePrefix}${Client}-core-automation-*/files/shared/*"
+                  - Fn::Sub: "arn:aws:s3:::${ScopePrefix}${Client}-core-automation-*/artefacts/core/automation-runner/*/_latest/*"
+        - PolicyName: ExecuteInvokerLambdaFunction
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - lambda:InvokeFunction
+                Resource:
+                  - Fn::Sub: "arn:aws:lambda:*:${AWS::AccountId}:function:${ScopePrefix}core-automation-*-invoker"
+
+  # Used to trigger app deployments, for developers
+  DeveloperAutomationUser:
+    Type: AWS::IAM::User
+    Properties:
+      UserName:
+        Fn::Sub: "${ScopePrefix}automation-developer"
+      Path: /
+      Policies:
+        - PolicyName: WriteAutomationBucket
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - s3:PutObject
+                Resource:
+                  - Fn::Sub: "arn:aws:s3:::${ScopePrefix}${Client}-core-automation-*/packages/*"
+                  - Fn::Sub: "arn:aws:s3:::${ScopePrefix}${Client}-core-automation-*/artefacts/*"
+                  - Fn::Sub: "arn:aws:s3:::${ScopePrefix}${Client}-core-automation-*/artifacts/*"
+                  - Fn::Sub: "arn:aws:s3:::${ScopePrefix}${Client}-core-automation-*/files/*"
+              - Effect: Allow
+                Action:
+                  - s3:GetObject
+                Resource:
+                  - Fn::Sub: "arn:aws:s3:::${ScopePrefix}${Client}-core-automation-*/files/shared/*"
+                  - Fn::Sub: "arn:aws:s3:::${ScopePrefix}${Client}-core-automation-*/artefacts/core/automation-runner/*/_latest/*"
+        - PolicyName: ExecuteInvokerLambdaFunction
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - lambda:InvokeFunction
+                Resource:
+                  - Fn::Sub: "arn:aws:lambda:*:${AWS::AccountId}:function:${ScopePrefix}core-automation-*-invoker"
+
+  # Used to deploy and teardown the automation itself (Lambdas, step functions, DynamoDB tables, etc)
+  AutomationDeploymentUser:
+    Type: AWS::IAM::User
+    Properties:
+      UserName:
+        Fn::Sub: "${ScopePrefix}automation-deployment"
+      Path: /
+      Policies:
+        # Allow deployment / teardown of automation resources
+        - PolicyName: AutomationDeploymentPolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - lambda:*
+                  - states:*
+                  - iam:*
+                  - cloudformation:*
+                  - dynamodb:*
+                  - logs:*
+                Resource: "*"
+        # Do not allow this role to assume any other roles
+        - PolicyName: DenyAssumeRole
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Deny
+                Action:
+                  - iam:AssumeRole
+                Resource: "*"
+        # Allow write to automation bucket packages, artefacts, and files
+        - PolicyName: ReadWriteAutomationBucket
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - s3:PutObject
+                  - s3:Get*
+                  - s3:DeleteObject
+                Resource:
+                  - Fn::Sub: "arn:aws:s3:::${ScopePrefix}${Client}-core-automation-*/packages/*"
+                  - Fn::Sub: "arn:aws:s3:::${ScopePrefix}${Client}-core-automation-*/artefacts/*"
+                  - Fn::Sub: "arn:aws:s3:::${ScopePrefix}${Client}-core-automation-*/files/*"
+                  - Fn::Sub: "arn:aws:s3:::${ScopePrefix}${Client}-core-automation-*/facts/*"
+              - Effect: Allow
+                Action:
+                  - s3:ListBucket
+                Resource:
+                  - Fn::Sub: "arn:aws:s3:::${ScopePrefix}${Client}-core-automation-*"
+                Condition:
+                  StringLike:
+                    "s3:prefix": ["facts/*"]
+

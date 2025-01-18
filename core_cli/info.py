@@ -1,14 +1,22 @@
-import json
+from rich.table import Table
+from rich import box
+
+from .common import cprint
 
 from .cmdparser import ExecuteCommandsType
 
 from ._version import __version__
 
+from .environment import print_environmnt
+
 
 def execute_info(**kwargs):
-    print(f"Version {__version__}\n\n")
 
-    print(json.dumps(kwargs, indent=4))
+    cprint(f"Core Automation Information v{__version__}\n")
+
+    cprint("This is the core CLI information:\n")
+
+    print_environmnt()
 
 
 def get_info_command(subparsers) -> ExecuteCommandsType:

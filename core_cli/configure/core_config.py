@@ -175,7 +175,7 @@ def list_organizational_units(root_id, **kwargs):
     try:
         # Create an Organizations client
         region, role = get_region_role(**kwargs)
-        client = org_client(region=region, role=role)
+        client = aws.org_client(region=region, role=role)
 
         # Initialize pagination
         paginator = client.get_paginator("list_organizational_units_for_parent")
@@ -200,7 +200,7 @@ def list_organization_accounts(**kwargs):
     try:
         # Create an Organizations client
         region, role = get_region_role(**kwargs)
-        client = org_client(region=region, role=role)
+        client = aws.org_client(region=region, role=role)
 
         # Initialize pagination
         paginator = client.get_paginator("list_accounts")
@@ -221,7 +221,7 @@ def list_roles_with_keywords(substrings, **kwargs):
     try:
         # Create an IAM client
         region, role = get_region_role(**kwargs)
-        client = iam_client(region=region, role=role)
+        client = aws.iam_client(region=region, role=role)
 
         # Initialize pagination
         paginator = client.get_paginator("list_roles")

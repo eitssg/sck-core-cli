@@ -17,6 +17,8 @@ from .engine import get_engine_command
 from .organization import get_organization_command
 from .portfolio import get_portfolio_command
 from .info import get_info_command
+from .setup import get_setup_command
+
 from ._version import __version__
 
 from .environment import set_environment
@@ -64,7 +66,6 @@ def parse_args(args: list[str], common_parser=None) -> dict:
 
     core_parser = CoreArgumentParser(
         prog="core",
-        usage="core [-c client] [--aws-profile profile] command [<args>]",
         commands_title="Available Core-Automation Commands",
     )
 
@@ -86,7 +87,7 @@ def parse_args(args: list[str], common_parser=None) -> dict:
     )
 
     command_parser = core_parser.add_custom_subparsers(
-        dest="command", metavar="<command>"
+        dest="command", metavar="<module>"
     )
 
     # COMMANDS.update(get_configure_command(command_parser))
@@ -95,6 +96,7 @@ def parse_args(args: list[str], common_parser=None) -> dict:
     COMMANDS.update(get_organization_command(command_parser))
     COMMANDS.update(get_info_command(command_parser))
     COMMANDS.update(get_portfolio_command(command_parser))
+    COMMANDS.update(get_setup_command(command_parser))
 
     pargs = vars(core_parser.parse_args(args))
 
