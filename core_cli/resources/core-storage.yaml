@@ -2,7 +2,7 @@ AWSTemplateFormatVersion: "2010-09-09"
 Description: CloudFormation template to create an S3 bucket with a secure bucket policy.
 
 Parameters:
-  ScopePrefix:
+  Scope:
     Type: String
     Default: ""
 
@@ -76,7 +76,7 @@ Resources:
                 TransitionInDays: 30
       Tags:
         - Key: "Scope"
-          Value: !Ref ScopePrefix
+          Value: !Ref Scope
         - Key: "Client"
           Value: !Ref Client
         - Key: "Portfolio"
@@ -101,10 +101,10 @@ Resources:
             Effect: Allow
             Principal:
               AWS:
-                - !Sub "arn:aws:iam::${AWS::AccountId}:role/${ScopePrefix}CoreAutomationApiRead"
-                - !Sub "arn:aws:iam::${AWS::AccountId}:role/${ScopePrefix}CoreAutomationApiWrite"
-                - !Sub "arn:aws:iam::${AWS::AccountId}:role/${ScopePrefix}CorePipelineControl"
-                - !Sub "arn:aws:iam::${AWS::AccountId}:role/${ScopePrefix}CorePipelineProvisioning"
+                - !Sub "arn:aws:iam::${AWS::AccountId}:role/${Scope}CoreAutomationApiRead"
+                - !Sub "arn:aws:iam::${AWS::AccountId}:role/${Scope}CoreAutomationApiWrite"
+                - !Sub "arn:aws:iam::${AWS::AccountId}:role/${Scope}CorePipelineControl"
+                - !Sub "arn:aws:iam::${AWS::AccountId}:role/${Scope}CorePipelineProvisioning"
             Action:
               - 's3:GetObject'
               - 's3:PutObject'
@@ -154,7 +154,7 @@ Resources:
                 TransitionInDays: 30
       Tags:
         - Key: "Scope"
-          Value: !Ref ScopePrefix
+          Value: !Ref Scope
         - Key: "Client"
           Value: !Ref Client
         - Key: "Portfolio"
@@ -180,10 +180,10 @@ Resources:
             Effect: Allow
             Principal:
               AWS:
-                - !Sub "arn:aws:iam::${AWS::AccountId}:role/${ScopePrefix}CoreAutomationApiRead"
-                - !Sub "arn:aws:iam::${AWS::AccountId}:role/${ScopePrefix}CoreAutomationApiWrite"
-                - !Sub "arn:aws:iam::${AWS::AccountId}:role/${ScopePrefix}CorePipelineControl"
-                - !Sub "arn:aws:iam::${AWS::AccountId}:role/${ScopePrefix}CorePipelineProvisioning"
+                - !Sub "arn:aws:iam::${AWS::AccountId}:role/${Scope}CoreAutomationApiRead"
+                - !Sub "arn:aws:iam::${AWS::AccountId}:role/${Scope}CoreAutomationApiWrite"
+                - !Sub "arn:aws:iam::${AWS::AccountId}:role/${Scope}CorePipelineControl"
+                - !Sub "arn:aws:iam::${AWS::AccountId}:role/${Scope}CorePipelineProvisioning"
             Action:
               - 's3:GetObject'
               - 's3:PutObject'
@@ -211,13 +211,13 @@ Outputs:
     Description: Automation bucket name
     Value: !Ref AutomationBucket
     Export:
-      Name: !Sub "${ScopePrefix}AutomationBucketName"
+      Name: !Sub "${Scope}AutomationBucketName"
 
   AutomationBucketArn:
     Description: Automation bucket ARN
     Value: !GetAtt AutomationBucket.Arn
     Export:
-      Name: !Sub "${ScopePrefix}AutomationBucketArn"
+      Name: !Sub "${Scope}AutomationBucketArn"
 
   ArtefactsBucketName:
     Description: Artefacts bucket name
@@ -226,7 +226,7 @@ Outputs:
       - !Ref ArtefactsBucket
       - !Ref AutomationBucket
     Export:
-      Name: !Sub "${ScopePrefix}ArtefactsBucketName"
+      Name: !Sub "${Scope}ArtefactsBucketName"
 
   ArtefactsBucketArn:
     Description: Artefacts bucket ARN
@@ -235,4 +235,4 @@ Outputs:
       - !GetAtt ArtefactsBucket.Arn
       - !GetAtt AutomationBucket.Arn
     Export:
-      Name: !Sub "${ScopePrefix}ArtefactsBucketArn"
+      Name: !Sub "${Scope}ArtefactsBucketArn"

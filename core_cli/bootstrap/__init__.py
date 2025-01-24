@@ -4,8 +4,8 @@ from rich.table import Table
 from rich import box
 import subprocess
 import os
-import core_helper.aws as aws
-from core_db.registry.client.actions import ClientActions
+
+from core_db.registry import ClientActions, ZoneActions, PortfolioActions, AppActions
 
 import core_cli.resources
 import core_db.platform
@@ -52,8 +52,20 @@ from core_framework.constants import (
     P_STACK_PARAMETERS,
     P_DYNAMODB_HOST,
     P_DYNAMODB_REGION,
+    P_PORTFOLIO,
+    P_APP,
+    P_BRANCH,
+    P_BUILD,
+    P_ENVIRONMENT,
     P_USE_S3,
     P_TAGS,
+    TAG_CLIENT,
+    TAG_SCOPE,
+    TAG_PORTFOLIO,
+    TAG_APP,
+    TAG_BRANCH,
+    TAG_BUILD,
+    TAG_ENVIRONMENT,
 )
 
 import core_db.registry
@@ -80,12 +92,35 @@ from ..common import (
 
 from .deploy import start_deploy_stack
 
+PORTFOLIO = "core"
+BRANCH = "master"
+ENVIRONMENT = "prod"
+ZONE_REGION_KEY = "sin"
+
+
+def get_tags(data: dict, app: str) -> dict:
+
+    data[P_PORTFOLIO] = PORTFOLIO
+    data[P_APP] = app
+    data[P_BRANCH] = BRANCH
+    data[P_BUILD] = __version__
+    data[P_ENVIRONMENT] = ENVIRONMENT
+
+    return {
+        TAG_CLIENT: data[P_CLIENT],
+        TAG_SCOPE: data[P_SCOPE],
+        TAG_PORTFOLIO: data[P_PORTFOLIO],
+        TAG_APP: data[P_APP],
+        TAG_BRANCH: data[P_BRANCH],
+        TAG_BUILD: data[P_BUILD],
+        TAG_ENVIRONMENT: data[P_ENVIRONMENT],
+    }
+
 
 def deploy_roles(data, next) -> str:
 
     cprint("\nDEPLOY ROLES\n", style="bold underline")
 
-    client = data[P_CLIENT]
     scope_prefix = data[P_SCOPE]
     clients_table_name = data[P_CLIENT_TABLE_NAME]
     zones_table_name = data[P_ZONES_TABLE_NAME]
@@ -96,15 +131,7 @@ def deploy_roles(data, next) -> str:
 
     cli_project_dir = os.path.dirname(os.path.realpath(core_cli.resources.__file__))
 
-    tags = {
-        "Client": client,
-        "ScopePrefix": scope_prefix,
-        "Portfolio": "core",
-        "App": "storage",
-        "Branch": "master",
-        "Environment": "prod",
-        "Build": __version__,
-    }
+    tags = get_tags(data, "roles")
 
     data["stack_parameters"] = {
         "ClientsTableName": clients_table_name,
@@ -113,7 +140,7 @@ def deploy_roles(data, next) -> str:
         "AppsTableName": app_table_name,
         "BucketName": bucket_name,
         "ArtefactBucketName": artefact_bucket_name,
-        **tags
+        **tags,
     }
 
     data[P_TEMPLATE] = os.path.join(cli_project_dir, "core-roles.yaml")
@@ -173,21 +200,13 @@ def deploy_storage(data, next) -> str:
 
     cli_project_dir = os.path.dirname(os.path.realpath(core_cli.resources.__file__))
 
-    tags = {
-        "Client": client,
-        "ScopePrefix": scope_prefix,
-        "Portfolio": "core",
-        "App": "storage",
-        "Branch": "master",
-        "Environment": "prod",
-        "Build": __version__,
-    }
+    tags = get_tags(data, "storage")
 
     data[P_STACK_PARAMETERS] = {
         "OrganizationId": organization_id,
         "AutomationBucketName": automation_bucket,
         "ArtefactsBucketName": artefacts_bucket,
-        **tags
+        **tags,
     }
 
     data[P_TEMPLATE] = os.path.join(cli_project_dir, "core-storage.yaml")
@@ -286,6 +305,102 @@ def pre_storage(data, next) -> str:
     return next
 
 
+def register_client(data):
+
+    client = data[P_CLIENT]
+
+    cprint("\nSaving client facts to the database...")
+
+    response = ClientActions.get(client=client)
+    client_facts = response.data if isinstance(response.data, dict) else {}
+
+    client_facts.update(
+        {
+            P_CLIENT: client,
+            P_SCOPE: data[P_SCOPE],
+            P_CLIENT_REGION: data[P_CLIENT_REGION],
+            P_ORGANIZATION_ID: data[P_ORGANIZATION_ID],
+            P_ORGANIZATION_NAME: data[P_ORGANIZATION_NAME],
+            P_ORGANIZATION_ACCOUNT: data[P_ORGANIZATION_ACCOUNT],
+            P_ORGANIZATION_EMAIL: data[P_ORGANIZATION_EMAIL],
+            P_AUTOMATION_ACCOUNT: data[P_AUTOMATION_ACCOUNT],
+            P_MASTER_REGION: data[P_REGION],
+        }
+    )
+
+    ClientActions.update(**client_facts)
+
+
+def register_zone(data):
+    client = data[P_CLIENT]
+    zone = "core-automation-zone"
+
+    response = ZoneActions.get(client=client, zone=zone)
+    zone_facts = response.data if isinstance(response.data, dict) else {}
+
+    util.deep_merge_in_place(
+        zone_facts,
+        {
+            "Client": client,
+            "Zone": zone,
+            "AccountFacts": {
+                "AwsAccountId": data[P_AUTOMATION_ACCOUNT],
+                "Environment": ENVIRONMENT,
+            },
+            "RegionFacts": {ZONE_REGION_KEY: {"AwsRegion": data[P_REGION]}},
+        },
+        True,
+    )
+
+    ZoneActions.update(**zone_facts)
+
+
+def register_portfolio(data):
+
+    client = data[P_CLIENT]
+    portfolio = data[P_PORTFOLIO]
+
+    response = PortfolioActions.get(client=client, portfolio=portfolio)
+    portfolio_facts = response.data if isinstance(response.data, dict) else {}
+
+    portfolio_facts.update(
+        {"Client": client, "Portfolio": portfolio, "Owner": data[P_USERNAME]}
+    )
+
+    PortfolioActions.update(**portfolio_facts)
+
+
+def register_app(data):
+
+    client = data[P_CLIENT]
+    portfolio = data[P_PORTFOLIO]
+
+    portfoilio_key = f"{client}:{portfolio}"
+
+    app = data[P_APP]
+    branch = data[P_BRANCH]
+    app_regex = f"^prn:{portfolio}:{app}:{branch}:.*$"
+
+    # Create default tags for app registration
+    tags = get_tags(data, app)
+    tags.pop(TAG_APP, None)
+
+    response = AppActions.get(ClientPortfolio=portfoilio_key, app=app_regex)
+    app_facts = response.data if isinstance(response.data, dict) else {}
+
+    app_facts.update(
+        {
+            "Client": client,
+            "Portfolio": portfolio,
+            "Zone": "core-automation-zone",
+            "Region": ZONE_REGION_KEY,
+            "Tags": tags,
+        }
+    )
+
+    AppActions.update(**app_facts)
+
+
 def deploy_database(data, next) -> str:
 
     client = data[P_CLIENT]
@@ -299,15 +414,7 @@ def deploy_database(data, next) -> str:
     # Deploy the FACTS tables
     cprint("\nDEPLOY FACTS DATABASE\n", style="bold underline")
 
-    tags = {
-        "Client": client,
-        "ScopePrefix": scope_prefix,
-        "Portfolio": "core",
-        "App": "storage",
-        "Branch": "master",
-        "Environment": "prod",
-        "Build": __version__,
-    }
+    tags = get_tags(data, "facts")
 
     data[P_STACK_PARAMETERS] = {
         "ClientsTableName": data[P_CLIENT_TABLE_NAME],
@@ -333,10 +440,12 @@ def deploy_database(data, next) -> str:
     # Deploy the ITEMS and EVENTS deployment info tables
     cprint("\nDEPLOY DEPLOYMENTS DATABASE\n", style="bold underline")
 
+    tags = get_tags(data, "db")
+
     data[P_STACK_PARAMETERS] = {
         "ItemTableName": data[P_ITEMS_TABLE_NAME],
         "EventTableName": data[P_EVENTS_TABLE_NAME],
-        **tags
+        **tags,
     }
 
     data[P_TEMPLATE] = os.path.join(db_project_dir, "core-automation-db-items.yaml")
@@ -348,24 +457,10 @@ def deploy_database(data, next) -> str:
     # Reset the master region
     data[P_REGION] = region
 
-    cprint("\nSaving client facts to the database...")
-
-    response = ClientActions.get(client=client)
-    client_facts: dict = response.data if isinstance(response.data, dict) else {}
-
-    client_facts.update({
-        P_CLIENT: client,
-        P_SCOPE: scope_prefix,
-        P_CLIENT_REGION: data[P_CLIENT_REGION],
-        P_ORGANIZATION_ID: data[P_ORGANIZATION_ID],
-        P_ORGANIZATION_NAME: data[P_ORGANIZATION_NAME],
-        P_ORGANIZATION_ACCOUNT: data[P_ORGANIZATION_ACCOUNT],
-        P_ORGANIZATION_EMAIL: data[P_ORGANIZATION_EMAIL],
-        P_AUTOMATION_ACCOUNT: data[P_AUTOMATION_ACCOUNT],
-        P_MASTER_REGION: data[P_REGION],
-    })
-
-    ClientActions.update(**client_facts)
+    register_client(data)
+    register_zone(data)
+    register_portfolio(data)
+    register_app(data)
 
     cprint(
         "\n[bold]WOW!  Good Job![/bold] The Process is complete!\n", style="bold green"
@@ -506,8 +601,14 @@ def check_configuration(data, next) -> str:
     cprint("The following illustrates what will be installed:")
 
     username = data[P_USERNAME]
-    aws_profile = util.get_aws_profile()
-    client = util.get_client()
+    aws_profile = data[P_AWS_PROFILE]
+    client = data[P_CLIENT]
+
+    data[P_PORTFOLIO] = PORTFOLIO
+    data[P_APP] = ""  # To be filled in later
+    data[P_BRANCH] = BRANCH
+    data[P_ENVIRONMENT] = ENVIRONMENT
+    data[P_BUILD] = __version__
 
     data[P_REGION] = region = util.get_region()
     data[P_CLIENT_REGION] = client_region = util.get_client_region()
@@ -681,15 +782,15 @@ def check_profile(data, next) -> str:
 
         data[P_AWS_PROFILE] = aws_profile = util.get_aws_profile()
         data[P_USERNAME] = username = get_iam_user_name()
-        data[P_IDENTITY] = identity = aws.get_identity()
         data[P_REGION] = region = util.get_region()
-        if not identity or not username:
-            raise Exception("No identity/username found")
+
     except Exception:
         cprint(
             "There was a problem.  Please check your AWS configuration and try again."
         )
         raise
+
+    identity = data[P_IDENTITY]
 
     data[P_CURRENT_ACCOUNT] = current_account = identity["Account"]
 
@@ -923,21 +1024,41 @@ STEPS: dict[str, tuple[Callable, str]] = {
 
 
 def get_description() -> str:
-    return """Setup the Core-Automation platform
+    return """Bootstrap the Core-Automation Platform.
 
-This command will setup the Core-Automation platform.  This will include setting up Core-Automation environment.
+This command will setup/bootstrap the Core-Automation platform.
 
 You will need to have the AWS CLI installed and configured with the appropriate permissions to run this command.
+
+Environment Variables Required:
+
+    CLIENT=<name>
+    AUTOMATION_ACCOUNT=<account_number>
+
+CLINET is the short 'slug' name of your organization.  Example: "acme" or "myorg".
+
+This represents your organization in AWS Organizations.
+
+AUTOMATION_ACCOUNT is the AWS account number of the account where the core automation resources will be installed/bootstrapped.
+
+CLIENT and AUTOMATION_ACCOUNT environment variables can be defined with
+
+# core --client <name> bootstrap --account <automation_account>
 
 """
 
 
-def get_setup_command(parser) -> ExecuteCommandsType:
+def get_bootstrap_command(parser) -> ExecuteCommandsType:
 
-    description = "Setup the Core-Automation platform"
-    parser.add_parser("setup", help=description, description=get_description())
-
-    return {"setup": (description, execute_setup)}
+    description = "Bootstrap the Core-Automation platform"
+    p = parser.add_parser("bootstrap", help=description, description=get_description())
+    p.add_argument(
+        "-a, --account",
+        dest=P_AUTOMATION_ACCOUNT,
+        metavar="<account_number>",
+        help="The automation account number",
+    )
+    return {"bootstrap": (description, execute_setup)}
 
 
 def execute_setup(**kwargs):

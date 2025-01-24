@@ -7,7 +7,7 @@ from ..common import (
     get_organization_info,
     get_account_info,
     check_admin_privileges,
-    cprint
+    cprint,
 )
 
 

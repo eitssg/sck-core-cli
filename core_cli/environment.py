@@ -148,17 +148,20 @@ def get_environment(include_none: bool | None = None) -> dict[str, str]:
     return env_vars
 
 
-def set_environment(**kwargs):
+def set_environment(data: dict[str, str]) -> None:
     """
-    Set environment variables from specified paramters from the command line.
+    Set environment variables from specified P_ paramters from the command line.
 
     Args:
         **kwargs: The commadline paramters used to set enviroment variables.
 
     """
     for k, v in argument_map.items():
-        if k in kwargs:
-            os.environ[v] = kwargs.get(k)
+        if k in data:
+            # kwargs will contain the P_ property even though the user didn't specify it..  It will be None.
+            value = data.get(k)
+            if value:  # skip if empty or None
+                os.environ[v] = value
 
 
 def print_environmnt():

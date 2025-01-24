@@ -6,17 +6,43 @@ from typing import Callable
 from ..cmdparser import ExecuteCommandsType
 
 from core_framework.constants import (
+    ENV_AWS_PROFILE,
     ENV_TASKS,
     ENV_PORTFOLIO,
     ENV_APP,
     ENV_BRANCH,
     ENV_BUILD,
     ENV_SCOPE,
+    ENV_MASTER_REGION,
     ENV_AUTOMATION_TYPE,
     ENV_BUCKET_NAME,
     ENV_BUCKET_REGION,
     ENV_INVOKER_LAMBDA_NAME,
     ENV_INVOKER_LAMBDA_REGION,
+    ENV_INVOKER_LAMBDA_ARN,
+    ENV_AUTOMATION_ACCOUNT,
+    ENV_ORGANIZATION_ACCOUNT,
+    ENV_ORGANIZATION_ID,
+    P_SCOPE,
+    P_CLIENT,
+    P_AWS_PROFILE,
+    P_PORTFOLIO,
+    P_APP,
+    P_BRANCH,
+    P_BUILD,
+    P_BUCKET_NAME,
+    P_BUCKET_REGION,
+    P_AUTOMATION_TYPE,
+    P_INVOKER_NAME,
+    P_INVOKER_ARN,
+    P_INVOKER_REGION,
+    P_AUTOMATION_ACCOUNT,
+    P_ORGANIZATION_ACCOUNT,
+    P_ORGANIZATION_ID,
+    P_MASTER_REGION,
+    V_DEFAULT_REGION,
+    V_DEPLOYSPEC,
+    V_PIPELINE,
 )
 
 from .apply import task_apply
@@ -56,17 +82,17 @@ def make_defaults(data: dict) -> dict:
     """Make default values that were not supplied in the command line arguments"""
 
     # This can't poossibly be None.  The program will fail long before it gets here if it is.
-    client = data.get("client", None)
+    client = data.get(P_CLIENT, None)
 
-    aws_profile = data.get("aws_profile", None)
+    aws_profile = data.get(P_AWS_PROFILE, None)
     if not aws_profile:
-        data["aws_profile"] = os.getenv("AWS_PROFILE", client)
+        data[P_AWS_PROFILE] = os.getenv(ENV_AWS_PROFILE, client)
 
-    scope_prefix = data.get("scope_prefix", "")
-    bucket_name = data.get("bucket_name", None)
+    scope_prefix = data.get(P_SCOPE, "")
+    bucket_name = data.get(P_BUCKET_NAME, None)
     if not bucket_name:
-        bucket_region = data.get("bucket_region", None)
-        data["bucket_name"] = f"{scope_prefix}{client}-core-automation-{bucket_region}"
+        bucket_region = data.get(P_BUCKET_REGION, None)
+        data[P_BUCKET_NAME] = f"{scope_prefix}{client}-core-automation-{bucket_region}"
 
     # Is there a bug here?  If the default invoker branch when not specified is 'master', does it need
     # to align to an invoker name that has been explicity specified?
@@ -74,12 +100,12 @@ def make_defaults(data: dict) -> dict:
     data["invoker_branch"] = invoker_branch
 
     if invoker_branch == "master":
-        data.setdefault("invoker_name", f"{scope_prefix}core-automation-master-invoker")
+        data.setdefault(P_INVOKER_NAME, f"{scope_prefix}core-automation-master-invoker")
     else:
         invoker_branch_short_name = re.sub(r"[^a-z0-9\-]", "-", invoker_branch.lower())[
             :20
         ].rstrip("-")
-        data["invoker_name"] = (
+        data[P_INVOKER_NAME] = (
             f"{scope_prefix}core-automation-{invoker_branch_short_name}-invoker"
         )
 
@@ -100,7 +126,6 @@ def get_run_command(subparsers) -> ExecuteCommandsType:
         choices=TASKS,
         description=descriptions,
         epilog=get_epilog(),
-        usage="core run [<tasks>] [<options>]",
         help=descriptions,
     )
 
@@ -115,71 +140,110 @@ def get_run_command(subparsers) -> ExecuteCommandsType:
         default=default_commands,
     )
 
-    master_region = os.getenv("MASTER_REGION", "ap-southeast-1")
-    scope_prefix = os.getenv("SCOPE_PREFIX", os.getenv("SCOPE_PREFIX", ""))
+    master_region = os.getenv(ENV_MASTER_REGION, V_DEFAULT_REGION)
+    scope_prefix = os.getenv(ENV_SCOPE, os.getenv("SCOPE_PREFIX", ""))
 
     run_parser.add_argument("-s", "--scope", default=scope_prefix, help="Scope name")
     run_parser.add_argument(
-        "-p", "--portfolio", default=os.getenv("PORTFOLIO"), help="Portfolio name"
-    )
-    run_parser.add_argument("-a", "--app", default=os.getenv("APP"), help="App name")
-    run_parser.add_argument(
-        "-b", "--branch", default=os.getenv("BRANCH"), help="Branch name"
-    )
-    run_parser.add_argument(
-        "-n", "--build", default=os.getenv("BUILD"), help="Build name"
+        "-p",
+        "--portfolio",
+        dest=P_PORTFOLIO,
+        metavar="<portfolio>",
+        default=os.getenv(ENV_PORTFOLIO),
+        help="Portfolio name",
     )
     run_parser.add_argument(
-        "--bucket-name", default=os.getenv("BUCKET_NAME"), help="S3 bucket name"
+        "-a",
+        "--app",
+        dest=P_APP,
+        metavar="<app>",
+        default=os.getenv(ENV_APP),
+        help="App name",
+    )
+    run_parser.add_argument(
+        "-b",
+        "--branch",
+        dest=P_BRANCH,
+        metavar="<branch>",
+        default=os.getenv(ENV_BRANCH),
+        help="Branch name",
+    )
+    run_parser.add_argument(
+        "-n",
+        "--build",
+        dest=P_BUILD,
+        metavar="<build>",
+        default=os.getenv(ENV_BUILD),
+        help="Build name",
+    )
+    run_parser.add_argument(
+        "--bucket-name",
+        dest=P_BUCKET_NAME,
+        metavar="<bucket-name>",
+        default=os.getenv(ENV_BUCKET_NAME),
+        help="S3 bucket name",
     )
     run_parser.add_argument(
         "--bucket-region",
-        default=os.getenv("BUCKET_REGION", master_region),
+        dest=P_BUCKET_REGION,
+        metavar="<bucket-region>",
+        default=os.getenv(ENV_BUCKET_REGION, master_region),
         help=f'S3 bucket region. Default "{master_region}"',
     )
     run_parser.add_argument(
         "--automation-type",
-        default=os.getenv("AUTOMATION_TYPE", "pipeline"),
-        choices=["deployspec", "pipeline"],
-        help='Automation type [deployspec, pipeline].  Default: "pipeline"',
-    )
-    run_parser.add_argument(
-        "--extra-facts-json",
-        metavar="",
-        help="Supply extra facts to the compiler. Must be a valid json string.",
+        dest=P_AUTOMATION_TYPE,
+        metaavar="<automation-type>",
+        default=os.getenv(ENV_AUTOMATION_TYPE, V_PIPELINE),
+        choices=[V_DEPLOYSPEC, V_PIPELINE],
+        help=f'Automation type [{V_DEPLOYSPEC}, {V_PIPELINE}].  Default: "{V_PIPELINE}"',
     )
     run_parser.add_argument(
         "--invoker-name",
-        default=os.getenv("INVOKER_LAMBDA_NAME"),
+        dest=P_INVOKER_NAME,
+        metavar="<invoker-name>",
+        default=os.getenv(ENV_INVOKER_LAMBDA_NAME),
         help="Invoker Lambda name",
     )
     run_parser.add_argument(
-        "--invoker-branch",
-        default=os.getenv("INVOKER_LAMBDA_BRANCH"),
+        "--invoker-arn",
+        dest=P_INVOKER_ARN,
+        metavar="<invoker-arn>",
+        default=os.getenv(ENV_INVOKER_LAMBDA_ARN),
         help="Invoker Lambda branch. Takes precedence over the --invoker-name option.",
     )
     run_parser.add_argument(
         "--invoker-region",
-        default=os.getenv("INVOKER_LAMBDA_REGION", master_region),
+        dest=P_INVOKER_REGION,
+        metavar="<invoker-region>",
+        default=os.getenv(ENV_INVOKER_LAMBDA_REGION, master_region),
         help=f'Invoker Lambda region, default "{master_region}"',
     )
     run_parser.add_argument(
         "--automation-account",
-        default=os.getenv("AUTOMATION_ACCOUNT"),
+        dest=P_AUTOMATION_ACCOUNT,
+        metavar="<automation-account>",
+        default=os.getenv(ENV_AUTOMATION_ACCOUNT),
         help="Automaton AWS Account ID",
     )
     run_parser.add_argument(
         "--organization_account",
-        default=os.getenv("ORGANIZATION_ACCOUNT"),
+        dest=P_ORGANIZATION_ACCOUNT,
+        metavar="<organization-account>",
+        default=os.getenv(ENV_ORGANIZATION_ACCOUNT),
         help="Master/Payer Organization Account",
     )
     run_parser.add_argument(
         "--organization_id",
-        default=os.getenv("ORGANIZATION_ID"),
+        dest=P_ORGANIZATION_ID,
+        metavar="<organization-id>",
+        default=os.getenv(ENV_ORGANIZATION_ID),
         help="AWS Organization ID",
     )
     run_parser.add_argument(
         "--master-region",
+        dest=P_MASTER_REGION,
+        metavar="<master-region>",
         default=master_region,
         help="AWS region for the master Automation account",
     )

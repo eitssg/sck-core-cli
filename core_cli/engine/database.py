@@ -1,4 +1,3 @@
-
 import core_framework as util
 
 from core_framework.models import TaskPayload
@@ -112,28 +111,30 @@ def print_task_payload(task_payload: TaskPayload):
 def create_package(kwargs):
     """create and upload the package"""
 
-    kwargs['task'] = 'package'
-    kwargs['automation_type'] = 'deployspec'
+    kwargs["task"] = "package"
+    kwargs["automation_type"] = "deployspec"
     task_payload = TaskPayload.from_arguments(**kwargs)
 
     cprint("Creating and uploading package")
 
     invoke(task_payload.model_dump())
 
+
 def upload_package(kwargs):
     """upload the package"""
 
-    kwargs['task'] = 'upload'
-    kwargs['automation_type'] = 'deployspec'
+    kwargs["task"] = "upload"
+    kwargs["automation_type"] = "deployspec"
     task_payload = TaskPayload.from_arguments(**kwargs)
 
     cprint("Uploading package")
 
+
 def compile_package(kwargs):
     """compile the package"""
 
-    kwargs['task'] = 'compile'
-    kwargs['automation_type'] = 'deployspec'
+    kwargs["task"] = "compile"
+    kwargs["automation_type"] = "deployspec"
     task_payload = TaskPayload.from_arguments(**kwargs)
 
     cprint("Compiling package")
@@ -144,13 +145,14 @@ def compile_package(kwargs):
 def deploy_package(kwargs):
     """deploy the package"""
 
-    kwargs['task'] = 'deploy'
-    kwargs['automation_type'] = 'deployspec'
+    kwargs["task"] = "deploy"
+    kwargs["automation_type"] = "deployspec"
     task_payload = TaskPayload.from_arguments(**kwargs)
 
     cprint("Deploying package")
 
     invoke(task_payload.model_dump())
+
 
 def get_teardown_task(subparsers) -> ExecuteCommandsType:
     """add the teardown parser"""
@@ -176,8 +178,8 @@ def execute_teardown(**kwargs):
 
     print("Teardown")
 
-    kwargs['task'] = 'teardown'
-    kwargs['automation_type'] = 'deployspec'
+    kwargs["task"] = "teardown"
+    kwargs["automation_type"] = "deployspec"
     task_payload = TaskPayload.from_arguments(**kwargs)
 
     invoke(task_payload.model_dump())

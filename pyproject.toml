@@ -69,6 +69,7 @@ develop = true
 [tool.poetry.dependencies.sck-core-framework]
 path = "../sck-core-framework"
 develop = true
+
 [tool.poetry.scripts]
 core = "core_cli.core:main"
 

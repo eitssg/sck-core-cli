@@ -2,7 +2,7 @@ AWSTemplateFormatVersion: '2010-09-09'
 Description: CloudFormation template to create Core Automation API roles
 
 Parameters:
-  ScopePrefix:
+  Scope:
     Type: String
     Default: ""
     AllowedPattern: "^([a-z]+-)*$"
@@ -53,7 +53,7 @@ Resources:
     Type: "AWS::IAM::Role"
     Properties:
       RoleName:
-        Fn::Sub: "${ScopePrefix}CorePipelineProvisioning"
+        Fn::Sub: "${Scope}CorePipelineProvisioning"
       AssumeRolePolicyDocument:
         Version: "2012-10-17"
         Statement:
@@ -66,7 +66,7 @@ Resources:
         - "arn:aws:iam::aws:policy/AdministratorAccess"
       Tags:
         - Key: "Scope"
-          Value: !Ref ScopePrefix
+          Value: !Ref Scope
         - Key: "Client"
           Value: !Ref Client
         - Key: "Portfolio"
@@ -84,7 +84,7 @@ Resources:
     Type: "AWS::IAM::Role"
     Properties:
       RoleName:
-        Fn::Sub: "${ScopePrefix}CoreAutomationApiRead"
+        Fn::Sub: "${Scope}CoreAutomationApiRead"
       AssumeRolePolicyDocument:
         Version: "2012-10-17"
         Statement:
@@ -115,7 +115,7 @@ Resources:
                   - !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${ZonesTableName}"
       Tags:
         - Key: "Scope"
-          Value: !Ref ScopePrefix
+          Value: !Ref Scope
         - Key: "Client"
           Value: !Ref Client
         - Key: "Portfolio"
@@ -133,7 +133,7 @@ Resources:
     Type: "AWS::IAM::Role"
     Properties:
       RoleName:
-        Fn::Sub: "${ScopePrefix}CoreAutomationApiWrite"
+        Fn::Sub: "${Scope}CoreAutomationApiWrite"
       AssumeRolePolicyDocument:
         Version: "2012-10-17"
         Statement:
@@ -168,7 +168,7 @@ Resources:
                   - !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${ZonesTableName}"
       Tags:
         - Key: "Scope"
-          Value: !Ref ScopePrefix
+          Value: !Ref Scope
         - Key: "Client"
           Value: !Ref Client
         - Key: "Portfolio"
@@ -188,7 +188,7 @@ Resources:
     Type: AWS::IAM::Role
     Properties:
       RoleName:
-        Fn::Sub: "${ScopePrefix}CorePipelineControl"
+        Fn::Sub: "${Scope}CorePipelineControl"
       AssumeRolePolicyDocument:
         Version: '2012-10-17'
         Statement:
@@ -210,7 +210,7 @@ Resources:
                 Action:
                   - sts:AssumeRole
                 Resource:
-                  - !Sub "arn:aws:iam::*:role/${ScopePrefix}CorePipelineProvisioning"
+                  - !Sub "arn:aws:iam::*:role/${Scope}CorePipelineProvisioning"
               - Effect: Allow
                 Action:
                   - s3:GetObject
@@ -220,10 +220,10 @@ Resources:
               - Effect: Allow
                 Action: "lambda:Invoke*"
                 Resource:
-                  Fn::Sub: "arn:aws:lambda:*:${AWS::AccountId}:function:${ScopePrefix}core-automation-*"
+                  Fn::Sub: "arn:aws:lambda:*:${AWS::AccountId}:function:${Scope}core-automation-*"
       Tags:
         - Key: "Scope"
-          Value: !Ref ScopePrefix
+          Value: !Ref Scope
         - Key: "Client"
           Value: !Ref Client
         - Key: "Portfolio"
@@ -241,46 +241,46 @@ Outputs:
     Description: PipelineControl role name
     Value: !Ref CorePipelineControlRole
     Export:
-      Name: !Sub "${ScopePrefix}CorePipelineControlRoleName"
+      Name: !Sub "${Scope}CorePipelineControlRoleName"
 
   CorePipelineControlRoleArn:
     Description: "ARN of the PipelineControlRole"
     Value: !GetAtt CorePipelineControlRole.Arn
     Export:
-      Name: !Sub "${ScopePrefix}CorePipelineControlRoleArn"
+      Name: !Sub "${Scope}CorePipelineControlRoleArn"
 
   CorePipelineProvisioningRoleName:
     Description: Pipeline provisioning role name
     Value: !Ref CorePipelineProvisioningRole
     Export:
-      Name: !Sub "${ScopePrefix}CorePipelineProvisioningRoleName"
+      Name: !Sub "${Scope}CorePipelineProvisioningRoleName"
 
   CorePipelineProvisioningRoleArn:
     Description: "ARN of the PipelineProvisioningRole"
     Value: !GetAtt CorePipelineProvisioningRole.Arn
     Export:
-      Name: !Sub "${ScopePrefix}CorePipelineProvisioningRoleArn"
+      Name: !Sub "${Scope}CorePipelineProvisioningRoleArn"
 
   CoreAutomationApiReadRoleName:
     Description: CoreAutomationApiReadRole role name
     Value: !Ref CoreAutomationApiReadRole
     Export:
-      Name: !Sub "${ScopePrefix}CoreAutomationApiReadRoleName"
+      Name: !Sub "${Scope}CoreAutomationApiReadRoleName"
 
   CoreAutomationApiReadRoleArn:
     Description: "ARN of the CoreAutomationApiReadRole"
     Value: !GetAtt CoreAutomationApiReadRole.Arn
     Export:
-      Name: !Sub "${ScopePrefix}CoreAutomationApiReadRoleArn"
+      Name: !Sub "${Scope}CoreAutomationApiReadRoleArn"
 
   CoreAutomationApiWriteRoleName:
     Description: CoreAutomationApiWriteRole role name
     Value: !Ref CoreAutomationApiWriteRole
     Export:
-      Name: !Sub "${ScopePrefix}CoreAutomationApiWriteRoleName"
+      Name: !Sub "${Scope}CoreAutomationApiWriteRoleName"
 
   CoreAutomationApiWriteRoleArn:
     Description: "ARN of the CoreAutomationApiWriteRole"
     Value: !GetAtt CoreAutomationApiWriteRole.Arn
     Export:
-      Name: !Sub "${ScopePrefix}CoreAutomationApiWriteRoleArn"
+      Name: !Sub "${Scope}CoreAutomationApiWriteRoleArn"

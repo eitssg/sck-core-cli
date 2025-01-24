@@ -181,9 +181,23 @@ def display_stack_change_set(stack_name: str, region: str):
                         if "Name" in target:
                             target_name = resource["Target"]["Name"]
 
-                    table.add_row(action, logical_id, change_type, replacement, physical_id, target_name)
+                    table.add_row(
+                        action,
+                        logical_id,
+                        change_type,
+                        replacement,
+                        physical_id,
+                        target_name,
+                    )
             else:
-                table.add_row(action, logical_id, change_type, replacement, physical_id, target_name)
+                table.add_row(
+                    action,
+                    logical_id,
+                    change_type,
+                    replacement,
+                    physical_id,
+                    target_name,
+                )
 
     cprint(table)
 
@@ -334,7 +348,7 @@ def start_deploy_stack(**kwargs):
 
     stack_name = kwargs.get(P_STACK_NAME)
     template = kwargs.get(P_TEMPLATE)
-    region = kwargs.get("region", util.get_region())
+    region = kwargs.get(P_REGION, util.get_region())
 
     if not stack_name:
         raise Exception("Please provide the stack name as an argument.")

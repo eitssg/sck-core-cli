@@ -38,7 +38,9 @@ def jprint(msg: Any | None = None):
     console.print_json(msg)
 
 
-def get_input(message: str, options: list[str] | None = None, default: str | None = None) -> str:
+def get_input(
+    message: str, options: list[str] | None = None, default: str | None = None
+) -> str:
     """get input from the user"""
     if options is not None:
         options_str = "/".join(options)
@@ -108,15 +110,17 @@ def __gen_path(task_payload: TaskPayload) -> str:
         parts.append(dd.App)
     if dd.BranchShortName:
         parts.append(dd.BranchShortName)
-    parts.append(re.sub(r'[^a-zA-Z0-9]', '', dd.Build or ''))
+    parts.append(re.sub(r"[^a-zA-Z0-9]", "", dd.Build or ""))
     return "-".join(parts)
 
 
 def package_project(root_dir: str, task_payload: TaskPayload) -> str:
 
     # if the basedir of root_dir is not 'platform' then fail
-    if not root_dir.endswith('platform'):
-        raise ValueError('Invalid root directory. You must specify a platform directory')
+    if not root_dir.endswith("platform"):
+        raise ValueError(
+            "Invalid root directory. You must specify a platform directory"
+        )
 
     # use the python zipfile module to create a zip file of the project and include only the subfoloders "vars", "components"
     # and output the zip to the file "package.zip" in the "temp" directory
@@ -126,7 +130,7 @@ def package_project(root_dir: str, task_payload: TaskPayload) -> str:
     temp_dir = util.get_temp_dir(path)
     fn = os.path.join(temp_dir, V_PACKAGE_ZIP)
 
-    with zipfile.ZipFile(fn, 'w') as zipf:
+    with zipfile.ZipFile(fn, "w") as zipf:
         for root, _, files in os.walk(root_dir):
             for file in files:
                 zipf.write(os.path.join(root, file))
@@ -145,7 +149,7 @@ def upload_project(task_payload: TaskPayload, temp_dir: str) -> str:
 
     fn = os.path.join(temp_dir, V_PACKAGE_ZIP)
 
-    with open(fn, 'rb') as data:
+    with open(fn, "rb") as data:
         bucket.put_object(Key=file_key, Body=data)
 
     return file_key
