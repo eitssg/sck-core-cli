@@ -193,7 +193,7 @@ def get_run_command(subparsers) -> ExecuteCommandsType:
     run_parser.add_argument(
         "--automation-type",
         dest=P_AUTOMATION_TYPE,
-        metaavar="<automation-type>",
+        metavar="<automation-type>",
         default=os.getenv(ENV_AUTOMATION_TYPE, V_PIPELINE),
         choices=[V_DEPLOYSPEC, V_PIPELINE],
         help=f'Automation type [{V_DEPLOYSPEC}, {V_PIPELINE}].  Default: "{V_PIPELINE}"',

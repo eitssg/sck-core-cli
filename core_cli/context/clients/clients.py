@@ -1,9 +1,17 @@
+"""Client management module for core CLI.
+
+Provides commands and utilities for managing AWS organization clients through the CLI,
+including listing, adding, updating, and deleting client information.
+"""
+
 from rich.table import Table
 from rich import box
 from fastapi.testclient import TestClient
 
 from core_framework.constants import (
+    P_SCOPE,
     P_CLIENT,
+    P_CLIENT_NAME,
     P_CLIENT_REGION,
     P_ORGANIZATION_ID,
     P_ORGANIZATION_NAME,
@@ -11,15 +19,55 @@ from core_framework.constants import (
     P_ORGANIZATION_EMAIL,
     P_AUTOMATION_ACCOUNT,
     P_REGION,
+    P_CORRELATION_ID,
+    P_IDENTITY,
+    P_MASTER_REGION,
+    P_SECURITY_ACCOUNT,
+    P_AUDIT_ACCOUNT,
+    P_NETWORK_ACCOUNT,
+    P_DOMAIN,
+    P_BUCKET_REGION,
+    P_BUCKET_NAME,
+    P_ARTEFACT_BUCKET_NAME,
+    P_DOCUMENT_BUCKET_NAME,
+    P_UI_BUCKET_NAME,
 )
+import core_framework as util
 
-from core_api.api import get_app
+from core_api.api import get_app, generate_user_agent
+from core_api.api.tools import HDR_AUTHORIZATION, HDR_X_CORRELATION_ID
 
-from ...common import cprint
-from ...cmdparser import ExecuteCommandsType
+from core_cli._version import __version__
+from core_cli.common import cprint
+from core_cli.cmdparser import ExecuteCommandsType
 
 
 api_client = TestClient(get_app())
+# Generate a User-Agent header for api_client
+api_client.headers.update({"User-Agent": generate_user_agent("core-cli", __version__)})
+
+
+def show_cilent(data):
+
+    table = Table(title="Client Facts", box=box.SIMPLE)
+    table.add_column("Name", justify="left", style="cyan")
+    table.add_column("Value", justify="left", style="magenta")
+
+    for k, v in data.items():
+        table.add_row(k, v)
+
+    cprint(table)
+
+
+def get_headers(kwargs):
+    """get headers"""
+    credentials = kwargs.get(P_IDENTITY, {})
+    headers = {
+        HDR_AUTHORIZATION: f"Bearer {credentials.get('SessionToken')}",
+        HDR_X_CORRELATION_ID: kwargs.get(P_CORRELATION_ID, util.get_correlation_id()),
+    }
+
+    return headers
 
 
 def list_clients(**kwargs):
@@ -27,7 +75,9 @@ def list_clients(**kwargs):
 
     cprint("\nList Clients\n", style="bold underline")
 
-    response = api_client.get("/api/v1/registry/clients")
+    headers = get_headers(kwargs)
+
+    response = api_client.get("/api/v1/registry/clients", headers=headers)
     rest_data = response.json()
     data = rest_data.get("data", [])
 
@@ -46,11 +96,54 @@ def add_client(**kwargs):
 
     cprint("\nSave Client Facts", style="bold underline")
 
-    response = api_client.post("/api/v1/registry/clients", json=kwargs)
+    headers = get_headers(kwargs)
+
+    client = kwargs.get(P_CLIENT, None)
+    if not client:
+        raise ValueError("Client name is required")
+
+    # The json serializer in api_client.post() does not handle datetime or some other types properly
+    data = {
+        P_SCOPE: kwargs.get(P_SCOPE) or util.get_automation_scope(),
+        P_CLIENT: kwargs.get(P_CLIENT) or util.get_client(),
+        P_CLIENT_NAME: kwargs.get(P_CLIENT_NAME) or util.get_client_name(),
+        P_CLIENT_REGION: kwargs.get(P_CLIENT_REGION) or util.get_client_region(),
+        P_MASTER_REGION: kwargs.get(P_MASTER_REGION) or util.get_region(),
+        P_ORGANIZATION_ID: kwargs.get(P_ORGANIZATION_ID) or util.get_organization_id(),
+        P_ORGANIZATION_NAME: kwargs.get(P_ORGANIZATION_NAME)
+        or util.get_organization_name(),
+        P_ORGANIZATION_ACCOUNT: kwargs.get(P_ORGANIZATION_ACCOUNT)
+        or util.get_organization_account()
+        or util.get_automation_account(),
+        P_ORGANIZATION_EMAIL: kwargs.get(P_ORGANIZATION_EMAIL)
+        or util.get_organization_email(),
+        P_AUTOMATION_ACCOUNT: kwargs.get(P_AUTOMATION_ACCOUNT)
+        or util.get_automation_account(),
+        P_SECURITY_ACCOUNT: kwargs.get(P_SECURITY_ACCOUNT)
+        or util.get_security_account()
+        or util.get_automation_account(),
+        P_AUDIT_ACCOUNT: kwargs.get(P_AUDIT_ACCOUNT)
+        or util.get_audit_account()
+        or util.get_automation_account(),
+        P_NETWORK_ACCOUNT: kwargs.get(P_NETWORK_ACCOUNT)
+        or util.get_network_account()
+        or util.get_automation_account(),
+        P_DOMAIN: kwargs.get(P_DOMAIN) or (util.get_domain()),
+        P_BUCKET_REGION: kwargs.get(P_BUCKET_REGION) or util.get_bucket_region(),
+        P_BUCKET_NAME: kwargs.get(P_BUCKET_NAME) or util.get_bucket_name(client),
+        P_ARTEFACT_BUCKET_NAME: kwargs.get(P_ARTEFACT_BUCKET_NAME)
+        or util.get_artefact_bucket_name(client),
+        P_DOCUMENT_BUCKET_NAME: kwargs.get(P_DOCUMENT_BUCKET_NAME)
+        or util.get_document_bucket_name(client),
+        P_UI_BUCKET_NAME: kwargs.get(P_UI_BUCKET_NAME)
+        or util.get_ui_bucket_name(client),
+    }
+
+    response = api_client.post("/api/v1/registry/clients", headers=headers, json=data)
     rest_data = response.json()
     data = rest_data.get("data", {})
 
-    cprint(data)
+    show_cilent(data)
 
 
 def update_client(**kwargs):
@@ -61,13 +154,38 @@ def update_client(**kwargs):
 
     cprint("\nSave Client Facts", style="bold underline")
 
-    data = {k: v for k, v in kwargs.items() if v is not None}
+    headers = get_headers(kwargs)
 
-    request = api_client.put(f"/api/v1/registry/client/{client}", json=data)
+    keys = [
+        P_SCOPE,
+        P_CLIENT,
+        P_CLIENT_NAME,
+        P_CLIENT_REGION,
+        P_MASTER_REGION,
+        P_ORGANIZATION_ID,
+        P_ORGANIZATION_NAME,
+        P_ORGANIZATION_ACCOUNT,
+        P_ORGANIZATION_EMAIL,
+        P_AUTOMATION_ACCOUNT,
+        P_SECURITY_ACCOUNT,
+        P_AUDIT_ACCOUNT,
+        P_NETWORK_ACCOUNT,
+        P_DOMAIN,
+        P_BUCKET_REGION,
+        P_BUCKET_NAME,
+        P_ARTEFACT_BUCKET_NAME,
+        P_DOCUMENT_BUCKET_NAME,
+        P_UI_BUCKET_NAME]
+
+    data = {key: kwargs[key] for key in keys if key in kwargs and kwargs[key] is not None}
+
+    request = api_client.patch(
+        f"/api/v1/registry/client/{client}", headers=headers, json=data
+    )
     rest_data = request.json()
     data = rest_data.get("data", {})
 
-    cprint(data)
+    show_cilent(data)
 
 
 def delete_client(**kwargs):
@@ -78,7 +196,9 @@ def delete_client(**kwargs):
 
     cprint("\nSaving client facts to the database...")
 
-    response = api_client.delete(f"/api/v1/registry/client/{client}")
+    headers = get_headers(kwargs)
+
+    response = api_client.delete(f"/api/v1/registry/client/{client}", headers=headers)
     rest_data = response.json()
     data = rest_data.get("data", {})
 
@@ -93,18 +213,13 @@ def get_client(**kwargs):
 
     cprint("\nGetting Client Facts\n", style="bold underline")
 
-    response = api_client.get(f"/api/v1/registry/client/{client}")
+    headers = get_headers(kwargs)
+
+    response = api_client.get(f"/api/v1/registry/client/{client}", headers=headers)
     rest_data = response.json()
     data = rest_data.get("data", {})
 
-    table = Table(title="Client Facts", box=box.SIMPLE)
-    table.add_column("Name", justify="left", style="cyan")
-    table.add_column("Value", justify="left", style="magenta")
-
-    for k, v in data.items():
-        table.add_row(k, v)
-
-    cprint(table)
+    show_cilent(data)
 
 
 TASKS: ExecuteCommandsType = {
@@ -119,6 +234,13 @@ TASKS: ExecuteCommandsType = {
 def add_arguments(parser):
     """Add the clients arguments"""
     parser.add_argument(
+        "--scope",
+        dest=P_SCOPE,
+        metavar="<scope>",
+        help="Automation Engine scope",
+        required=False,
+    )
+    parser.add_argument(
         "--client",
         dest=P_CLIENT,
         metavar="<name>",
@@ -130,6 +252,13 @@ def add_arguments(parser):
         dest=P_CLIENT_REGION,
         metavar="<region>",
         help="Client region",
+        required=False,
+    )
+    parser.add_argument(
+        "--client-name",
+        dest=P_CLIENT_NAME,
+        metavar="<name>",
+        help="Client name",
         required=False,
     )
     parser.add_argument(
@@ -172,6 +301,69 @@ def add_arguments(parser):
         dest=P_REGION,
         metavar="<region>",
         help="AWS region for the master Automation account",
+        required=False,
+    )
+    parser.add_argument(
+        "--security-account",
+        dest=P_SECURITY_ACCOUNT,
+        metavar="<account>",
+        help="Security AWS Account ID",
+        required=False,
+    )
+    parser.add_argument(
+        "--audit-account",
+        dest=P_AUDIT_ACCOUNT,
+        metavar="<account>",
+        help="Audit AWS Account ID",
+        required=False,
+    )
+    parser.add_argument(
+        "--network-account",
+        dest=P_NETWORK_ACCOUNT,
+        metavar="<account>",
+        help="Network AWS Account ID",
+        required=False,
+    )
+    parser.add_argument(
+        "--domain",
+        dest=P_DOMAIN,
+        metavar="<domain>",
+        help="Top level Domain name of the organization (e.g. example.com)",
+        required=False,
+    )
+    parser.add_argument(
+        "--bucket-region",
+        dest=P_BUCKET_REGION,
+        metavar="<region>",
+        help="AWS region for the bucket to contain the pacakge details (e.g. us-west-2)",
+        required=False,
+    )
+    parser.add_argument(
+        "--bucket-name",
+        dest=P_BUCKET_NAME,
+        metavar="<name>",
+        help="Bucket name for the package details (e.g. my-sws-cdk-bucket)",
+        required=False,
+    )
+    parser.add_argument(
+        "--artefact-bucket-name",
+        dest=P_ARTEFACT_BUCKET_NAME,
+        metavar="<name>",
+        help="Bucket name for the artefacts (e.g. my-sws-cdk-bucket)",
+        required=False,
+    )
+    parser.add_argument(
+        "--document-bucket-name",
+        dest=P_DOCUMENT_BUCKET_NAME,
+        metavar="<name>",
+        help="Bucket name for the documents (e.g. my-docs-bucket)",
+        required=False,
+    )
+    parser.add_argument(
+        "--ui-bucket-name",
+        dest=P_UI_BUCKET_NAME,
+        metavar="<name>",
+        help="Bucket name for the UI files (e.g. my-ui-bucket)",
         required=False,
     )
 

@@ -6,22 +6,26 @@ from typing import Callable
 import os
 import sys
 
-from dotenv import load_dotenv
-
-load_dotenv(override=True)
-
 from botocore.exceptions import ClientError, ProfileNotFound  # noqa: E402
 
+from dotenv import load_dotenv
+
 import core_framework as util  # noqa: E402
-from core_framework.constants import (
+from core_framework.constants import (  # noqa: E402
     ENV_CLIENT,
     P_IDENTITY,
     P_CLIENT,
     P_AWS_PROFILE,
-)  # noqa: E402
+    P_CREDENTIALS,
+    P_CORRELATION_ID
+)
 
 import core_helper.aws as aws  # noqa: E402
 
+# Presently core_db requires the environment variables to be loaded.  It's initialized as part of loading the core_cli module.
+load_dotenv(override=True)
+
+# Please note that core_cli requires initial environment variables to be set.  Really only core_db needs it, but....
 from core_cli.cmdparser.cmdparser import CoreArgumentParser  # noqa: E402
 from core_cli.run import get_run_command  # noqa: E402
 from core_cli.engine import get_engine_command  # noqa: E402
@@ -111,6 +115,7 @@ def add_current_user_to_data(data):
     """populate the client_account information"""
     try:
 
+        data[P_CORRELATION_ID] = util.get_correlation_id()
         data[P_IDENTITY] = aws.get_identity()
 
     except ProfileNotFound as e:
