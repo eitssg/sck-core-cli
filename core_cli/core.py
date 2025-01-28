@@ -16,7 +16,6 @@ from core_framework.constants import (  # noqa: E402
     P_IDENTITY,
     P_CLIENT,
     P_AWS_PROFILE,
-    P_CREDENTIALS,
     P_CORRELATION_ID
 )
 
@@ -33,6 +32,8 @@ from core_cli.organization import get_organization_command  # noqa: E402
 from core_cli.context import get_context_command  # noqa: E402
 from core_cli.info import get_info_command  # noqa: E402
 from core_cli.bootstrap import get_bootstrap_command  # noqa: E402
+from core_cli.init import get_init_command  # noqa: E402
+from core_cli.domain import get_domain_command  # noqa: E402
 
 from core_cli._version import __version__  # noqa: E402
 
@@ -100,6 +101,8 @@ def parse_args(args: list[str], common_parser=None) -> dict:
     COMMANDS.update(get_info_command(command_parser))
     COMMANDS.update(get_context_command(command_parser))
     COMMANDS.update(get_bootstrap_command(command_parser))
+    COMMANDS.update(get_init_command(command_parser))
+    COMMANDS.update(get_domain_command(command_parser))
 
     pargs = vars(core_parser.parse_args(args))
 

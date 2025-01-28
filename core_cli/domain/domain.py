@@ -1,60 +1,52 @@
-import os
-import boto3
-from botocore.config import Config
+from rich.table import Table
+from rich import box
+
+import core_helper.aws as aws
+
+from core_cli.common import cprint
+from core_cli.cmdparser import ExecuteCommandsType
 
 
 def list_domains(**kwargs):
     # Create a Route 53 client
-    http_proxy = os.environ["HTTP_PROXY"]
-    https_proxy = os.environ["HTTPS_PROXY"]
-    aws_profile = os.environ.get("AWS_PROFILE", None)
-    aws_region = kwargs.get("aws_region", "ap-southeast-1")
-    proxy_definition = {"http": http_proxy, "https": https_proxy}
-
-    os.environ["http_proxy"] = http_proxy
-    os.environ["https_proxy"] = https_proxy
-
-    d = dict(os.environ)
-    print(d)
-
-    print(f"Client {aws_profile}")
-    print(f"Region {aws_region}")
-    print(proxy_definition)
-
-    session = boto3.Session(profile_name=aws_profile)
-
-    # Create a Route 53 client using the session
-    config = Config(proxies=proxy_definition)
-    client = session.client("route53domains", config=config)
+    client = aws.r53_client()
 
     try:
         # Call the list_domains method to retrieve all registered domains
-        response = client.list_domains()
+        response = client.list_hosted_zones()
 
         # Extract the domains from the response
-        domains = response["Domains"]
+        domains = [zone['Name'] for zone in response['HostedZones']]
+
+        table = Table(box=box.SIMPLE)
+        table.add_column("DomainName", justify="left")
 
         # Print the domains
         for domain in domains:
-            print(domain["DomainName"])
+            table.add_row(domain)
+
+        cprint(table)
 
     except Exception as e:
-        print(f"An error occurred: {e}")
+        cprint(f"An error occurred: {e}", style="red")
 
 
-DOMAIN_TASKS = {"list": ("List the domains in the organization", list_domains)}
+DOMAIN_TASKS: ExecuteCommandsType = {
+    "list": ("List the domains in the organization", list_domains)
+}
 
 
-def add_domain_parser(subparsers):
+def get_domain_command(subparsers) -> ExecuteCommandsType:
     """Get the parser for the configuration command"""
-    client = os.getenv("CLIENT", None)
+
+    description = "Manage the domains in the organization"
 
     domain_parser = subparsers.add_parser(
         "domains",
-        description="Manage the domains in the organization",
+        description=description,
         usage="core domains [<task>] [--client <name>]",
         choices=DOMAIN_TASKS,
-        help="Manage the domains in the organization",
+        help=description,
     )
     domain_parser.set_group_title(0, "Configure actions")
     domain_parser.set_group_title(1, "Available options")
@@ -62,21 +54,14 @@ def add_domain_parser(subparsers):
     domain_parser.add_argument(
         "task",
         choices=DOMAIN_TASKS.keys(),
-        help=f"List all the domains in the organization",
+        help="List all the domains in the organization",
     )
-    domain_parser.add_argument(
-        "-c",
-        "--client",
-        help=f"Client alias name of the organization. Default: {client}",
-        required=client is None,
-        default=client,
-    )
+
+    return {"domains": (description, execute_domains)}
 
 
 def execute_domains(**kwargs):
     """Configure the client vars for the specified client."""
-    task = kwargs.get("task", None)
-    if task:
+    task = kwargs.get("task")
+    if task in DOMAIN_TASKS:
         DOMAIN_TASKS[task][1](**kwargs)
-    else:
-        print("Unknown task specified")

@@ -1,10 +1,12 @@
 from rich.table import Table
 from rich import box
 
+from core_framework.constants import P_CLIENT, P_PORTFOLIO, P_PROJECT, P_DOMAIN, P_BIZAPP
+
 from core_db.registry import PortfolioActions
 
-from ...common import cprint
-from ...cmdparser import ExecuteCommandsType
+from core_cli.common import cprint
+from core_cli.cmdparser import ExecuteCommandsType
 
 
 def list_portfolios(**kwargs):
@@ -29,6 +31,17 @@ def add_portfolio(**kwargs):
     """add portfolio"""
     print(kwargs)
     print("Add Portfolio")
+
+    data = {
+        P_CLIENT: "myorg",
+        P_PORTFOLIO: "myportfolio",
+        P_PROJECT: "myproject",
+        P_DOMAIN: "mydomain",
+        P_BIZAPP: "mybizapp",
+    }
+
+
+
 
 
 def update_portfolio(**kwargs):
@@ -75,6 +88,7 @@ def get_portfolios_command(subparsers) -> ExecuteCommandsType:
 
     subparser.add_argument("action", choices=TASKS.keys(), help="The action to perform")
 
-    subparser.add_argument("-p", "--portfolio", help="Specifiy one portfolio by name")
+    subparser.add_argument(
+        "-p", "--portfolio", help="Specifiy one portfolio by name")
 
     return {"portfolios": (description, execute_portfolio)}

@@ -3,6 +3,8 @@
 import os
 from .core_config import update_core_config
 
+from core_framework.constants import P_CLIENT, P_AWS_PROFILE, ENV_CLIENT, ENV_AWS_PROFILE
+
 
 def execute_configure(**kwargs):
     """Configure the client vars for the specified client."""
@@ -14,13 +16,12 @@ def get_configure_command(subparsers):
 
     description = "Configure the core subsystem client vars"
 
-    client = os.getenv("CLIENT", None)
-    aws_profile = os.getenv("AWS_PROFILE", "default")
+    client = os.getenv(ENV_CLIENT, None)
+    aws_profile = os.getenv(ENV_AWS_PROFILE, "default")
 
     config_parser = subparsers.add_parser(
         "configure",
         description=description,
-        usage="core configure [--client <name>] [--show] [--delete]",
         help=description,
     )
     config_parser.set_group_title(0, "Configure actions")
@@ -29,12 +30,14 @@ def get_configure_command(subparsers):
     config_parser.add_argument(
         "-c",
         "--client",
+        dest=P_CLIENT,
         required=client is None,
         help=f"Client alias name of the organization. Default: {client}",
         default=client,
     )
     config_parser.add_argument(
         "--aws-profile",
+        dest=P_AWS_PROFILE,
         required=False,
         help=f"AWS profile to use to access automation engine. default {aws_profile}",
         default=aws_profile,

@@ -30,8 +30,8 @@ def get_organization_command(subparsers) -> ExecuteCommandsType:
         description=DESCRPTION,
         help=DESCRPTION,
     )
-    org_parser.set_group_title(0, "Configure actions")
-    org_parser.set_group_title(1, "Available options")
+    org_parser.set_group_title(0, "Org Actions")
+    org_parser.set_group_title(1, "Available Options")
 
     subparsers = org_parser.add_subparsers(
         dest="tasks", metavar="<task>", help="sub-command help"
