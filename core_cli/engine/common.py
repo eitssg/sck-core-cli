@@ -1,6 +1,6 @@
 import core_framework as util
 
-from .._version import __version__
+from core_cli import __version__
 
 from ..console import (
     cprint,

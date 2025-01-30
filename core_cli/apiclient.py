@@ -8,7 +8,7 @@ from core_api.api import get_app, generate_user_agent
 import core_framework as util
 from core_framework.constants import ENV_API_HOST_URL
 
-from core_cli._version import __version__
+from core_cli import __version__
 
 
 class APIClient:

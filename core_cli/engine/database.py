@@ -1,15 +1,12 @@
-import core_framework as util
 
 from core_framework.models import TaskPayload
 
-from core_deployspec import compiler
 from core_invoker import invoke
 
-from .._version import __version__
+from core_cli import __version__
+
 from ..cmdparser import ExecuteCommandsType
-
 from ..console import get_input, cprint
-
 from .common import exexecution_check
 
 
@@ -125,7 +122,7 @@ def upload_package(kwargs):
 
     kwargs["task"] = "upload"
     kwargs["automation_type"] = "deployspec"
-    task_payload = TaskPayload.from_arguments(**kwargs)
+    #task_payload = TaskPayload.from_arguments(**kwargs)
 
     cprint("Uploading package")
 

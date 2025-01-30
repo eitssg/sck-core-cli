@@ -1,9 +1,7 @@
+from core_cli import __version__
+
 from .console import cprint
-
 from .cmdparser import ExecuteCommandsType
-
-from ._version import __version__
-
 from .environment import print_environmnt
 
 

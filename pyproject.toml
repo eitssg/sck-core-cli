@@ -6,11 +6,11 @@ build-backend = "poetry_dynamic_versioning.backend"
 name = "sck-core-cli"
 version = "0.0.4"
 description = "Core Automation Deployment Engine Tools, SCK Module, and CLI"
-authors = [ "James Barwick <james.barwick@simple.com>",]
+authors = [ "James Barwick <jbarwick@eits.com.sg>",]
 license = "GPL-3.0-only"
 readme = "README.md"
 maintainers = [ "Ethan Chan <ethan.chsn@simple.com>", "Yunarta Kwee <yunarta.kwee@simple.com>",]
-include = [ "CHANGELOG.md","core_cli/_version.py",]
+include = [ "CHANGELOG.md","core_cli/version.py",]
 homepage = "https://simple-jira.atlassian.net/wiki/spaces/FND/overview"
 documentation = "https://simple-jira.atlassian.net/wiki/spaces/FND/overview"
 repository = "https://bitbucket.dev.aws.simple.com/scm/fnd/simple-core-automation.git"
@@ -63,9 +63,8 @@ name = "nexus"
 url = "https://monster-jj.jvj28.com:9091/repository/pypi/simple/"
 priority = "primary"
 
-[tool.poetry-dynamic-versioning.files."core_cli/_version.py"]
-persistent-substitution = true
-initial-content = "\"\"\"\nVersion information for the core-cli module\n\"\"\"\n__version__ = \"0.0.0\"\n__version_tuple__ = (0, 0, 0)\n"
+[tool.poetry-dynamic-versioning.substitution]
+files = ["core_cli/__init__.py"]
 
 [tool.poetry.group.dev.dependencies]
 poetry = ">=1.8.5"

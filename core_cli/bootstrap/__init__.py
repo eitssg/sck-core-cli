@@ -79,8 +79,8 @@ from core_db.constants import (
 )
 from core_db.config import get_table_name
 
+from core_cli import __version__
 
-from .._version import __version__
 from ..cmdparser import ExecuteCommandsType
 from ..console import (
     get_input,

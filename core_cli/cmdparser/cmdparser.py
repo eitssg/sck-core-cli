@@ -3,7 +3,7 @@ import os
 import argparse
 import gettext
 
-from .._version import __version__
+from core_cli import __version__
 
 locale_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), "..", "locale")
 gettext.bindtextdomain("sck_core", locale_path)

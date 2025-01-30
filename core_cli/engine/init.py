@@ -8,9 +8,9 @@ from jinja2 import Environment, FileSystemLoader, TemplateNotFound
 
 import core_framework as util
 
-from ..cmdparser import ExecuteCommandsType
-from .._version import __version__
+from core_cli import __version__
 
+from ..cmdparser import ExecuteCommandsType
 from ..exceptions import OrganizationNotSetException
 from ..console import (
     get_input,

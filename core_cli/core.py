@@ -24,6 +24,8 @@ import core_helper.aws as aws  # noqa: E402
 # Presently core_db requires the environment variables to be loaded.  It's initialized as part of loading the core_cli module.
 load_dotenv(override=True)
 
+from core_cli import __version__  # noqa: E402
+
 # Please note that core_cli requires initial environment variables to be set.  Really only core_db needs it, but....
 from core_cli.cmdparser.cmdparser import CoreArgumentParser  # noqa: E402
 from core_cli.run import get_run_command  # noqa: E402
@@ -34,8 +36,6 @@ from core_cli.info import get_info_command  # noqa: E402
 from core_cli.bootstrap import get_bootstrap_command  # noqa: E402
 from core_cli.init import get_init_command  # noqa: E402
 from core_cli.domain import get_domain_command  # noqa: E402
-
-from core_cli._version import __version__  # noqa: E402
 
 from core_cli.environment import set_environment  # noqa: E402
 
