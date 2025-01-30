@@ -2,7 +2,7 @@ import os
 from rich.table import Table
 from rich import box
 
-from .common import cprint
+from .console import cprint
 
 from core_framework.constants import (
     ENV_AWS_PROFILE,

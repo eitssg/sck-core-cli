@@ -3,7 +3,12 @@
 import os
 from .core_config import update_core_config
 
-from core_framework.constants import P_CLIENT, P_AWS_PROFILE, ENV_CLIENT, ENV_AWS_PROFILE
+from core_framework.constants import (
+    P_CLIENT,
+    P_AWS_PROFILE,
+    ENV_CLIENT,
+    ENV_AWS_PROFILE,
+)
 
 
 def execute_configure(**kwargs):

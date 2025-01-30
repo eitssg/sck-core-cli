@@ -5,7 +5,7 @@ from rich.table import Table
 
 import core_helper.aws as aws
 
-from ..common import get_account_info, get_input, cprint, jprint
+from ..console import get_account_info, get_input, cprint, jprint
 
 from ..cmdparser.cmdparser import ExecuteCommandsType
 

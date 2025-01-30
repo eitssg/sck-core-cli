@@ -6,7 +6,6 @@ including listing, adding, updating, and deleting client information.
 
 from rich.table import Table
 from rich import box
-from fastapi.testclient import TestClient
 
 from core_framework.constants import (
     P_SCOPE,
@@ -34,17 +33,15 @@ from core_framework.constants import (
 )
 import core_framework as util
 
-from core_api.api import get_app, generate_user_agent
 from core_api.api.tools import HDR_AUTHORIZATION, HDR_X_CORRELATION_ID
 
-from core_cli._version import __version__
-from core_cli.common import cprint
+from core_cli.console import cprint
 from core_cli.cmdparser import ExecuteCommandsType
+from core_cli.apiclient import APIClient
 
 
-api_client = TestClient(get_app())
-# Generate a User-Agent header for api_client
-api_client.headers.update({"User-Agent": generate_user_agent("core-cli", __version__)})
+# Get the api_client singteton instance
+api_client = APIClient.get_instance()
 
 
 def show_cilent(data):
@@ -77,7 +74,7 @@ def list_clients(**kwargs):
 
     headers = get_headers(kwargs)
 
-    response = api_client.get("/api/v1/registry/clients", headers=headers)
+    response = APIClien().get("/api/v1/registry/clients", headers=headers)
     rest_data = response.json()
     data = rest_data.get("data", [])
 
@@ -175,9 +172,12 @@ def update_client(**kwargs):
         P_BUCKET_NAME,
         P_ARTEFACT_BUCKET_NAME,
         P_DOCUMENT_BUCKET_NAME,
-        P_UI_BUCKET_NAME]
+        P_UI_BUCKET_NAME,
+    ]
 
-    data = {key: kwargs[key] for key in keys if key in kwargs and kwargs[key] is not None}
+    data = {
+        key: kwargs[key] for key in keys if key in kwargs and kwargs[key] is not None
+    }
 
     request = api_client.patch(
         f"/api/v1/registry/client/{client}", headers=headers, json=data

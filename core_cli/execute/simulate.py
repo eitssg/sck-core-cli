@@ -1,8 +1,7 @@
-
 import core_framework as util
 from core_framework.constants import P_PORTFOLIO, P_APP, P_BRANCH, P_BUILD
 from core_framework.models import TaskPayload
-from core_cli.common import cprint
+from core_cli.console import cprint
 
 import core_helper.aws as aws
 

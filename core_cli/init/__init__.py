@@ -15,11 +15,11 @@ from core_framework.constants import (
     P_BRANCH,
     P_BUILD,
     P_ENVIRONMENT,
-    CTX_CONTEXT
+    CTX_CONTEXT,
 )
 
 from core_cli.cmdparser import ExecuteCommandsType
-from core_cli.common import get_input, cprint
+from core_cli.console import get_input, cprint
 
 
 def get_init_command(subparsers) -> ExecuteCommandsType:
@@ -146,16 +146,18 @@ def update_cdk_json(**kwargs):
 
     prn = f"prn:{portfolio}:{app}:{branch}:{build}"
 
-    context.update({
-        DD_SCOPE: scope,
-        DD_CLIENT: client,
-        DD_PORTFOLIO: portfolio,
-        DD_APP: app,
-        DD_BRANCH: branch,
-        DD_BUILD: build,
-        DD_ENVIRONMENT: kwargs.get(P_ENVIRONMENT, ""),
-        "prn": prn
-    })
+    context.update(
+        {
+            DD_SCOPE: scope,
+            DD_CLIENT: client,
+            DD_PORTFOLIO: portfolio,
+            DD_APP: app,
+            DD_BRANCH: branch,
+            DD_BUILD: build,
+            DD_ENVIRONMENT: kwargs.get(P_ENVIRONMENT, ""),
+            "prn": prn,
+        }
+    )
 
     with open(fn, "w") as f:
         util.write_json(data, f, 2)

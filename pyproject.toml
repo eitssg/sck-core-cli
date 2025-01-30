@@ -4,7 +4,7 @@ build-backend = "poetry_dynamic_versioning.backend"
 
 [tool.poetry]
 name = "sck-core-cli"
-version = "0.0.3"
+version = "0.0.4"
 description = "Core Automation Deployment Engine Tools, SCK Module, and CLI"
 authors = [ "James Barwick <james.barwick@simple.com>",]
 license = "GPL-3.0-only"
@@ -49,26 +49,11 @@ xmltodict = ">=0.13.0"
 yq = ">=3.4.3"
 fastapi = "^0.115.4"
 rich = "^13.9.4"
-
-[tool.poetry.dependencies.sck-core-api]
-path = "../sck-core-api"
-develop = true
-
-[tool.poetry.dependencies.sck-core-invoker]
-path = "../sck-core-invoker"
-develop = true
-
-[tool.poetry.dependencies.sck-core-organization]
-path = "../sck-core-organization"
-develop = true
-
-[tool.poetry.dependencies.sck-core-db]
-path = "../sck-core-db"
-develop = true
-
-[tool.poetry.dependencies.sck-core-framework]
-path = "../sck-core-framework"
-develop = true
+sck-core-framework = "^0.0.4"
+sck-core-db = "^0.0.4"
+sck-core-organization = "^0.0.4"
+sck-core-invoker = "^0.0.4"
+sck-core-api = "^0.0.4"
 
 [tool.poetry.scripts]
 core = "core_cli.core:main"
@@ -97,3 +82,4 @@ uvicorn = "^0.34.0"
 black = "^24.10.0"
 httpx = "^0.28.1"
 pytest-dotenv = "^0.5.2"
+types-requests = "^2.32.0.20241016"

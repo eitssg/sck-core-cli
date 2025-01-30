@@ -5,7 +5,7 @@ from ..cmdparser import ExecuteCommandsType
 from .._version import __version__
 
 from ..environment import get_environment
-from ..common import cprint
+from ..console import cprint
 
 
 def execute_info(**kwargs):

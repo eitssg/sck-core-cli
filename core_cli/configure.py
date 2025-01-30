@@ -1,10 +1,14 @@
 import configparser
 import os
+
+import core_framework as util
+from .console import cprint
+
 from argparse import ArgumentParser
 
 
 def get_client_name(**kwargs) -> str:
-    client = kwargs.get("client")
+    client = util.get_client()
     if not client:
         raise OSError("You must specify 'client'. No client specified")
     return client

@@ -2,7 +2,7 @@ import core_framework as util
 
 from .._version import __version__
 
-from ..common import (
+from ..console import (
     get_iam_user_name,
     get_organization_info,
     get_account_info,

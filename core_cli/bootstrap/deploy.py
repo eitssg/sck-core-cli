@@ -15,7 +15,7 @@ from core_framework.constants import (
 
 import core_logging as log
 
-from ..common import cprint, get_input
+from ..console import cprint, get_input
 
 
 def generate_parameters(data: dict):

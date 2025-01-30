@@ -1,12 +1,23 @@
 from rich.table import Table
 from rich import box
 
-from core_framework.constants import P_CLIENT, P_PORTFOLIO, P_PROJECT, P_DOMAIN, P_BIZAPP
+import core_framework as util
+from core_framework.constants import (
+    P_CLIENT,
+    P_PORTFOLIO,
+    P_PROJECT,
+    P_DOMAIN,
+    P_BIZAPP,
+)
 
 from core_db.registry import PortfolioActions
 
-from core_cli.common import cprint
+from core_cli.console import cprint
 from core_cli.cmdparser import ExecuteCommandsType
+from core_cli.apiclient import APIClient
+
+# Get the api_client singteton instance
+api_client = APIClient.get_instance()
 
 
 def list_portfolios(**kwargs):
@@ -33,15 +44,12 @@ def add_portfolio(**kwargs):
     print("Add Portfolio")
 
     data = {
-        P_CLIENT: "myorg",
-        P_PORTFOLIO: "myportfolio",
-        P_PROJECT: "myproject",
-        P_DOMAIN: "mydomain",
-        P_BIZAPP: "mybizapp",
+        P_CLIENT: kwargs.get(P_CLIENT, util.get_client()),
+        P_PORTFOLIO: kwargs.get(P_PORTFOLIO, None),
+        P_PROJECT: kwargs.get(P_PROJECT, None),
+        P_DOMAIN: kwargs.get(P_DOMAIN, None),
+        P_BIZAPP: kwargs.get(P_BIZAPP, kwargs.get(P_PORTFOLIO, None)),
     }
-
-
-
 
 
 def update_portfolio(**kwargs):
@@ -88,7 +96,6 @@ def get_portfolios_command(subparsers) -> ExecuteCommandsType:
 
     subparser.add_argument("action", choices=TASKS.keys(), help="The action to perform")
 
-    subparser.add_argument(
-        "-p", "--portfolio", help="Specifiy one portfolio by name")
+    subparser.add_argument("-p", "--portfolio", help="Specifiy one portfolio by name")
 
     return {"portfolios": (description, execute_portfolio)}

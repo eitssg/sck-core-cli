@@ -12,7 +12,7 @@ from ..cmdparser import ExecuteCommandsType
 from .._version import __version__
 
 from ..exceptions import OrganizationNotSetException
-from ..common import (
+from ..console import (
     get_input,
     get_iam_user_name,
     get_organization_info,

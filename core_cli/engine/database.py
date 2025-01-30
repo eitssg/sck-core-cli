@@ -8,7 +8,7 @@ from core_invoker import invoke
 from .._version import __version__
 from ..cmdparser import ExecuteCommandsType
 
-from ..common import get_input, cprint
+from ..console import get_input, cprint
 
 from .common import exexecution_check
 

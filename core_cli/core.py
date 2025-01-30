@@ -16,7 +16,7 @@ from core_framework.constants import (  # noqa: E402
     P_IDENTITY,
     P_CLIENT,
     P_AWS_PROFILE,
-    P_CORRELATION_ID
+    P_CORRELATION_ID,
 )
 
 import core_helper.aws as aws  # noqa: E402

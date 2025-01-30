@@ -82,7 +82,7 @@ from core_db.config import get_table_name
 
 from .._version import __version__
 from ..cmdparser import ExecuteCommandsType
-from ..common import (
+from ..console import (
     get_input,
     cprint,
     get_iam_user_name,

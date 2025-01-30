@@ -1,7 +1,4 @@
-from rich.table import Table
-from rich import box
-
-from .common import cprint
+from .console import cprint
 
 from .cmdparser import ExecuteCommandsType
 
