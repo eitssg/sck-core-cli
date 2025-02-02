@@ -1,4 +1,3 @@
-
 from core_framework.models import TaskPayload
 
 from core_invoker import invoke
@@ -122,7 +121,7 @@ def upload_package(kwargs):
 
     kwargs["task"] = "upload"
     kwargs["automation_type"] = "deployspec"
-    #task_payload = TaskPayload.from_arguments(**kwargs)
+    # task_payload = TaskPayload.from_arguments(**kwargs)
 
     cprint("Uploading package")
 
