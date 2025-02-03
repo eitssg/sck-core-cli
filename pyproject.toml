@@ -1,16 +1,19 @@
 [build-system]
-requires = [ "poetry-core>=1.0.0", "poetry-dynamic-versioning>=1.0.0,<2.0.0",]
+requires = ["poetry-core>=1.0.0", "poetry-dynamic-versioning>=1.0.0,<2.0.0"]
 build-backend = "poetry_dynamic_versioning.backend"
 
 [tool.poetry]
 name = "sck-core-cli"
 version = "0.0.5"
 description = "Core Automation Deployment Engine Tools, SCK Module, and CLI"
-authors = [ "James Barwick <jbarwick@eits.com.sg>",]
+authors = ["James Barwick <jbarwick@eits.com.sg>"]
 license = "GPL-3.0-only"
 readme = "README.md"
-maintainers = [ "Ethan Chan <ethan.chsn@simple.com>", "Yunarta Kwee <yunarta.kwee@simple.com>",]
-include = [ "CHANGELOG.md","core_cli/version.py",]
+maintainers = [
+    "Ethan Chan <ethan.chsn@simple.com>",
+    "Yunarta Kwee <yunarta.kwee@simple.com>",
+]
+include = ["CHANGELOG.md", "core_cli/version.py"]
 homepage = "https://simple-jira.atlassian.net/wiki/spaces/FND/overview"
 documentation = "https://simple-jira.atlassian.net/wiki/spaces/FND/overview"
 repository = "https://bitbucket.dev.aws.simple.com/scm/fnd/simple-core-automation.git"
@@ -35,7 +38,6 @@ boto3 = ">=1.35.93"
 botocore = ">=1.35.93"
 ruamel-yaml = "^0.18.10"
 pyyaml = "^6.0.2"
-tabulate = "^0.9.0"
 cfnresponse = ">=1.1.4"
 cryptography = "^42.0.8"
 argcomplete = ">=3.3.0"
@@ -75,7 +77,6 @@ pytest-cov = "^6.0.0"
 pylance = "^0.21.0"
 types-pyyaml = "^6.0.12.20240917"
 boto3-stubs = ">=1.35.93"
-types-tabulate = "^0.9.0.20240106"
 flake8 = "^7.1.1"
 cfn-lint = "^1.22.3"
 uvicorn = "^0.34.0"
