@@ -1,4 +1,4 @@
-""" Manage the organization accounts """
+"""Manage the organization accounts"""
 
 from ..cmdparser import ExecuteCommandsType
 

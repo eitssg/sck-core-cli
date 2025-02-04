@@ -1,4 +1,4 @@
-""" handle the apply task """
+"""handle the apply task"""
 
 
 def task_apply(**kwargs):

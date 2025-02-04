@@ -1,12 +1,20 @@
-""" API Client for making HTTP requests to the API server. """
+"""API Client for making HTTP requests to the API server."""
 
 import os
 import requests
 from fastapi.testclient import TestClient
-from core_api.api import get_app, generate_user_agent
 
 import core_framework as util
-from core_framework.constants import ENV_API_HOST_URL
+from core_framework.constants import ENV_API_HOST_URL, P_IDENTITY, P_CORRELATION_ID
+
+from core_api.api import get_app, generate_user_agent
+from core_api.api import (
+    HDR_AUTHORIZATION,
+    HDR_X_CORRELATION_ID,
+    HDR_USER_AGENT,
+    HDR_CONTENT_TYPE,
+    HDR_ACCEPT,
+)
 
 from core_cli import __version__
 
@@ -39,8 +47,8 @@ class APIClient:
     def _set_defaults(self, kwargs):
         if not self.local:
             kwargs["verify"] = self.validate_ssl
-        headers = kwargs["headers"] if "headers" in kwargs else {}
-        headers.update({"User-Agent": self.user_agent})
+        if "headers" not in kwargs:
+            kwargs["headers"] = self.get_headers()
 
     def get(self, url, params=None, **kwargs):
         """Sends a GET request.
@@ -158,3 +166,28 @@ class APIClient:
         if cls._instance is None:
             cls._instance = APIClient()
         return cls._instance
+
+    def get_headers(self, data: dict | None = None, content_type: str | None = None):
+        f"""Returns the headers for the client.
+
+        To set the bearer token, supply the data paramter with the {P_IDENTITY} field
+
+        """
+        headers = {
+            HDR_USER_AGENT: self.user_agent,
+            HDR_ACCEPT: "application/json",
+        }
+
+        if data:
+            credentials = data.get(P_IDENTITY, {})
+            headers[HDR_AUTHORIZATION] = f"Bearer {credentials.get('SessionToken')}"
+            headers[HDR_X_CORRELATION_ID] = data.get(
+                P_CORRELATION_ID, util.get_correlation_id()
+            )
+        else:
+            headers[HDR_X_CORRELATION_ID] = util.get_correlation_id()
+
+        if content_type:
+            headers[HDR_CONTENT_TYPE] = content_type
+
+        return headers

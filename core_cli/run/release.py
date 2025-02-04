@@ -1,4 +1,4 @@
-""" handle the release task """
+"""handle the release task"""
 
 
 def task_release(**kwargs):

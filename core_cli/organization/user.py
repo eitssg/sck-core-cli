@@ -1,4 +1,4 @@
-""" mange role policy """
+"""mange role policy"""
 
 import boto3
 import json

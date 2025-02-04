@@ -1,4 +1,4 @@
-""" CLI for managing zones """
+"""CLI for managing zones"""
 
 from ...cmdparser import ExecuteCommandsType
 

@@ -1,4 +1,4 @@
-""" THe Deploy module is responsible for deploying the Core Automation subsystem """
+"""THe Deploy module is responsible for deploying the Core Automation subsystem"""
 
 import os
 

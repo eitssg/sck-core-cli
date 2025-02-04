@@ -1,1 +1,1 @@
-""" SCK Core Module Tests """
+"""SCK Core Module Tests"""

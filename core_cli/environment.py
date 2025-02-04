@@ -27,6 +27,7 @@ from core_framework.constants import (
     ENV_INVOKER_LAMBDA_REGION,
     ENV_API_LAMBDA_ARN,
     ENV_API_LAMBDA_NAME,
+    ENV_API_HOST_URL,
     ENV_DYNAMODB_REGION,
     ENV_DYNAMODB_HOST,
     ENV_EXECUTE_LAMBDA_ARN,
@@ -37,6 +38,7 @@ from core_framework.constants import (
     ENV_MASTER_REGION,
     ENV_AUTOMATION_ACCOUNT,
     ENV_ORGANIZATION_ACCOUNT,
+    ENV_ORGANIZATION_EMAIL,
     ENV_ORGANIZATION_ID,
     ENV_ORGANIZATION_NAME,
     ENV_ARTEFACT_BUCKET_NAME,
@@ -47,6 +49,16 @@ from core_framework.constants import (
     ENV_LOCAL_MODE,
     ENV_USE_S3,
     ENV_ENFORCE_VALIDATION,
+    ENV_DOMAIN,
+    ENV_IAM_ACCOUNT,
+    ENV_AUDIT_ACCOUNT,
+    ENV_SECURITY_ACCOUNT,
+    ENV_NETWORK_ACCOUNT,
+    ENV_CORRELATION_ID,
+    ENV_DOCUMENT_BUCKET_NAME,
+    ENV_UI_BUCKET_NAME,
+    ENV_CDK_DEFAULT_ACCOUNT,
+    ENV_CDK_DEFAULT_REGION,
     P_AUTOMATION_TYPE,
     P_AWS_PROFILE,
     P_AWS_REGION,
@@ -69,6 +81,7 @@ from core_framework.constants import (
     P_INVOKER_REGION,
     P_API_LAMBDA_ARN,
     P_API_LAMBDA_NAME,
+    P_API_HOST_URL,
     P_DYNAMODB_REGION,
     P_DYNAMODB_HOST,
     P_EXECUTE_LAMBDA_ARN,
@@ -79,6 +92,7 @@ from core_framework.constants import (
     P_REGION,
     P_AUTOMATION_ACCOUNT,
     P_ORGANIZATION_ACCOUNT,
+    P_ORGANIZATION_EMAIL,
     P_ORGANIZATION_ID,
     P_ORGANIZATION_NAME,
     P_ARTEFACT_BUCKET_NAME,
@@ -89,6 +103,16 @@ from core_framework.constants import (
     P_LOCAL_MODE,
     P_USE_S3,
     P_ENFORCE_VALIDATION,
+    P_DOMAIN,
+    P_IAM_ACCOUNT,
+    P_AUDIT_ACCOUNT,
+    P_SECURITY_ACCOUNT,
+    P_NETWORK_ACCOUNT,
+    P_CORRELATION_ID,
+    P_DOCUMENT_BUCKET_NAME,
+    P_UI_BUCKET_NAME,
+    P_CDK_DEFAULT_ACCOUNT,
+    P_CDK_DEFAULT_REGION,
 )
 
 
@@ -118,6 +142,7 @@ argument_map: dict[str, str] = {
     P_INVOKER_REGION: ENV_INVOKER_LAMBDA_REGION,
     P_API_LAMBDA_ARN: ENV_API_LAMBDA_ARN,
     P_API_LAMBDA_NAME: ENV_API_LAMBDA_NAME,
+    P_API_HOST_URL: ENV_API_HOST_URL,
     P_DYNAMODB_REGION: ENV_DYNAMODB_REGION,
     P_DYNAMODB_HOST: ENV_DYNAMODB_HOST,
     P_EXECUTE_LAMBDA_ARN: ENV_EXECUTE_LAMBDA_ARN,
@@ -126,10 +151,16 @@ argument_map: dict[str, str] = {
     P_COMPONENT_COMPILER_LAMBDA_ARN: ENV_COMPONENT_COMPILER_LAMBDA_ARN,
     P_RUNNER_STEP_FUNCTION_ARN: ENV_RUNNER_STEP_FUNCTION_ARN,
     P_REGION: ENV_MASTER_REGION,
+    P_DOMAIN: ENV_DOMAIN,
+    P_IAM_ACCOUNT: ENV_IAM_ACCOUNT,
+    P_AUDIT_ACCOUNT: ENV_AUDIT_ACCOUNT,
+    P_SECURITY_ACCOUNT: ENV_SECURITY_ACCOUNT,
+    P_NETWORK_ACCOUNT: ENV_NETWORK_ACCOUNT,
     P_AUTOMATION_ACCOUNT: ENV_AUTOMATION_ACCOUNT,
     P_ORGANIZATION_ACCOUNT: ENV_ORGANIZATION_ACCOUNT,
     P_ORGANIZATION_ID: ENV_ORGANIZATION_ID,
     P_ORGANIZATION_NAME: ENV_ORGANIZATION_NAME,
+    P_ORGANIZATION_EMAIL: ENV_ORGANIZATION_EMAIL,
     P_ARTEFACT_BUCKET_NAME: ENV_ARTEFACT_BUCKET_NAME,
     P_LOG_AS_JSON: ENV_LOG_AS_JSON,
     P_VOLUME: ENV_VOLUME,
@@ -138,10 +169,72 @@ argument_map: dict[str, str] = {
     P_LOCAL_MODE: ENV_LOCAL_MODE,
     P_USE_S3: ENV_USE_S3,
     P_ENFORCE_VALIDATION: ENV_ENFORCE_VALIDATION,
+    P_CDK_DEFAULT_ACCOUNT: ENV_CDK_DEFAULT_ACCOUNT,
+    P_CDK_DEFAULT_REGION: ENV_CDK_DEFAULT_REGION,
+    P_CORRELATION_ID: ENV_CORRELATION_ID,
+    P_DOCUMENT_BUCKET_NAME: ENV_DOCUMENT_BUCKET_NAME,
+    P_UI_BUCKET_NAME: ENV_UI_BUCKET_NAME,
+}
+
+env_map: dict[str, str] = {
+    ENV_AWS_PROFILE: P_AWS_PROFILE,
+    ENV_AWS_REGION: P_AWS_REGION,
+    ENV_TASKS: P_TASKS,
+    ENV_UNITS: P_UNITS,
+    ENV_AUTOMATION_TYPE: P_AUTOMATION_TYPE,
+    ENV_CLIENT_NAME: P_CLIENT_NAME,
+    ENV_CLIENT: P_CLIENT,
+    ENV_CLIENT_REGION: P_CLIENT_REGION,
+    ENV_SCOPE: P_SCOPE,
+    ENV_PORTFOLIO: P_PORTFOLIO,
+    ENV_APP: P_APP,
+    ENV_BRANCH: P_BRANCH,
+    ENV_BUILD: P_BUILD,
+    ENV_COMPONENT: P_COMPONENT,
+    ENV_ENVIRONMENT: P_ENVIRONMENT,
+    ENV_BUCKET_NAME: P_BUCKET_NAME,
+    ENV_BUCKET_REGION: P_BUCKET_REGION,
+    ENV_INVOKER_LAMBDA_ARN: P_INVOKER_ARN,
+    ENV_INVOKER_LAMBDA_NAME: P_INVOKER_NAME,
+    ENV_INVOKER_LAMBDA_REGION: P_INVOKER_REGION,
+    ENV_API_LAMBDA_ARN: P_API_LAMBDA_ARN,
+    ENV_API_LAMBDA_NAME: P_API_LAMBDA_NAME,
+    ENV_API_HOST_URL: P_API_HOST_URL,
+    ENV_DYNAMODB_REGION: P_DYNAMODB_REGION,
+    ENV_DYNAMODB_HOST: P_DYNAMODB_HOST,
+    ENV_EXECUTE_LAMBDA_ARN: P_EXECUTE_LAMBDA_ARN,
+    ENV_START_RUNNER_LAMBDA_ARN: P_START_RUNNER_LAMBDA_ARN,
+    ENV_DEPLOYSPEC_COMPILER_LAMBDA_ARN: P_DEPLOYSPEC_COMPILER_LAMBDA_ARN,
+    ENV_COMPONENT_COMPILER_LAMBDA_ARN: P_COMPONENT_COMPILER_LAMBDA_ARN,
+    ENV_RUNNER_STEP_FUNCTION_ARN: P_RUNNER_STEP_FUNCTION_ARN,
+    ENV_MASTER_REGION: P_REGION,
+    ENV_DOMAIN: P_DOMAIN,
+    ENV_IAM_ACCOUNT: P_IAM_ACCOUNT,
+    ENV_AUDIT_ACCOUNT: P_AUDIT_ACCOUNT,
+    ENV_SECURITY_ACCOUNT: P_SECURITY_ACCOUNT,
+    ENV_NETWORK_ACCOUNT: P_NETWORK_ACCOUNT,
+    ENV_AUTOMATION_ACCOUNT: P_AUTOMATION_ACCOUNT,
+    ENV_ORGANIZATION_ACCOUNT: P_ORGANIZATION_ACCOUNT,
+    ENV_ORGANIZATION_ID: P_ORGANIZATION_ID,
+    ENV_ORGANIZATION_NAME: P_ORGANIZATION_NAME,
+    ENV_ORGANIZATION_EMAIL: P_ORGANIZATION_EMAIL,
+    ENV_ARTEFACT_BUCKET_NAME: P_ARTEFACT_BUCKET_NAME,
+    ENV_LOG_AS_JSON: P_LOG_AS_JSON,
+    ENV_VOLUME: P_VOLUME,
+    ENV_LOG_DIR: P_LOG_DIR,
+    ENV_DELIVERED_BY: P_DELIVERED_BY,
+    ENV_LOCAL_MODE: P_LOCAL_MODE,
+    ENV_USE_S3: P_USE_S3,
+    ENV_ENFORCE_VALIDATION: P_ENFORCE_VALIDATION,
+    ENV_CDK_DEFAULT_ACCOUNT: P_CDK_DEFAULT_ACCOUNT,
+    ENV_CDK_DEFAULT_REGION: P_CDK_DEFAULT_REGION,
+    ENV_CORRELATION_ID: P_CORRELATION_ID,
+    ENV_DOCUMENT_BUCKET_NAME: P_DOCUMENT_BUCKET_NAME,
+    ENV_UI_BUCKET_NAME: P_UI_BUCKET_NAME,
 }
 
 
-def get_environment(include_none: bool | None = None) -> dict[str, str]:
+def get_environment(include_none: bool = False) -> dict[str, str]:
     """
     return a dictionary of automtion environment vriables
 
@@ -151,10 +244,10 @@ def get_environment(include_none: bool | None = None) -> dict[str, str]:
         dict[str, str]: List of environment variables for core automation.
     """
     env_vars: dict[str, str] = {}
-    for v in argument_map.values():
-        if include_none or v in os.environ:
-            env_vars[v] = os.getenv(v, "")
-    return env_vars
+    for k in env_map.keys():
+        if include_none or k in os.environ:
+            env_vars[k] = os.getenv(k, "")
+    return dict(sorted(env_vars.items()))
 
 
 def set_environment(data: dict[str, str]) -> None:
@@ -173,6 +266,38 @@ def set_environment(data: dict[str, str]) -> None:
                 os.environ[v] = value
 
 
+def get_arguments(include_none: bool = False) -> dict[str, str | None]:
+    """
+    Set the command line arguments from the environment variables.
+
+    Args:
+        include_none (bool, optional): Include None values in the dictionary. Defaults to None.
+
+    Returns:
+        dict[str, str]: The command line arguments.
+    """
+    args = {}
+    for k, v in env_map.items():
+        if include_none or k in os.environ:
+            args[v] = os.getenv(k, None)
+    # return the dictionary sorted by key name
+    return dict(sorted(args.items()))
+
+
+def set_arguments_from_env(data: dict[str, str | None]) -> None:
+    """
+    Set the command line arguments from the environment variables.
+
+    Args:
+        data (dict[str, str]): The environment variables.
+    """
+    for k, v in env_map.items():
+        if k in os.environ:
+            value = os.getenv(k)
+            # Set to None if empty string
+            data[v] = value if value else None
+
+
 def print_environmnt():
 
     # print all environment variables ins a table
@@ -180,7 +305,7 @@ def print_environmnt():
     table.add_column("Environment Variable")
     table.add_column("Value")
 
-    envs = get_environment()
+    envs = get_environment(True)
     for key, value in envs.items():
         table.add_row(key, value)
 

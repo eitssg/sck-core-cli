@@ -1,4 +1,4 @@
-""" Operat the CLI for initialzing the core platform """
+"""Operat the CLI for initialzing the core platform"""
 
 import json
 import os

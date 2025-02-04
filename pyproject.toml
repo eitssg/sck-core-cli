@@ -4,7 +4,7 @@ build-backend = "poetry_dynamic_versioning.backend"
 
 [tool.poetry]
 name = "sck-core-cli"
-version = "0.0.5"
+version = "0.0.6"
 description = "Core Automation Deployment Engine Tools, SCK Module, and CLI"
 authors = ["James Barwick <jbarwick@eits.com.sg>"]
 license = "GPL-3.0-only"
@@ -52,12 +52,26 @@ rich = "^13.9.4"
 fastapi = "^0.115.4"
 uvicorn = "^0.34.0"
 httpx = "^0.28.1"
-sck-core-framework = "^0.0.5"
-sck-core-db = "^0.0.5"
-sck-core-organization = "^0.0.5"
-sck-core-invoker = "^0.0.5"
-sck-core-api = "^0.0.5"
 
+[tool.poetry.dependencies.sck-core-api]
+path = "../sck-core-api"
+develop = true
+
+[tool.poetry.dependencies.sck-core-invoker]
+path = "../sck-core-invoker"
+develop = true
+
+[tool.poetry.dependencies.sck-core-organization]
+path = "../sck-core-organization"
+develop = true
+
+[tool.poetry.dependencies.sck-core-db]
+path = "../sck-core-db"
+develop = true
+
+[tool.poetry.dependencies.sck-core-framework]
+path = "../sck-core-framework"
+develop = true
 [tool.poetry.scripts]
 core = "core_cli.core:main"
 

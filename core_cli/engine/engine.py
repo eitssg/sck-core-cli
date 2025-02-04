@@ -1,4 +1,4 @@
-""" This module manages the engine tasks """
+"""This module manages the engine tasks"""
 
 from ..cmdparser import ExecuteCommandsType
 

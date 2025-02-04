@@ -1,4 +1,4 @@
-""" Manage domains in the organizaiton """
+"""Manage domains in the organizaiton"""
 
 from .domain import get_domain_command, execute_domains
 

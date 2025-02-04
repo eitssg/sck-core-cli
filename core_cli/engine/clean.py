@@ -1,4 +1,4 @@
-""" Delete S3 bucket contents for core-automation """
+"""Delete S3 bucket contents for core-automation"""
 
 import os
 import re

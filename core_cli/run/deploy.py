@@ -1,4 +1,4 @@
-""" handle the deploy task """
+"""handle the deploy task"""
 
 
 def task_deploy(**kwargs):

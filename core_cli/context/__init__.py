@@ -5,6 +5,7 @@ from .clients import get_clients_command
 from .zones import get_zones_command
 from .apps import get_apps_command
 
+
 COMMAND: ExecuteCommandsType = {}
 
 

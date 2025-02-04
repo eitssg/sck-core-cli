@@ -1,4 +1,4 @@
-""" CLI for Client FACTS cotext data """
+"""CLI for Client FACTS cotext data"""
 
 from .clients import get_clients_command, execute_clients
 

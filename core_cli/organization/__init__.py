@@ -1,4 +1,4 @@
-""" retrieve organization information """
+"""retrieve organization information"""
 
 from .organization import get_organization_command
 

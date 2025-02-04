@@ -1,9 +1,8 @@
-""" Module that will make sure that privete zones are associated with all zones in the account_registry """
+"""Module that will make sure that privete zones are associated with all zones in the account_registry"""
 
 from typing import Any, Dict
 import botocore
 import boto3
-from ...configure import get_client_config_file
 
 _r53_client: Dict[str, Any] = {}
 
@@ -46,7 +45,7 @@ def _process_services_vpc(**kwargs):
 
     client_account = kwargs["account"]
     client_region = kwargs["client_region"]
-
+    role = ""
     profile = kwargs.get("aws_profile")
 
     hosted_zone_id = kwargs["hosted_zone"]["Id"]
@@ -166,8 +165,4 @@ def associate_zones(**kwargs):
         branch = f"-{branch}"
     filename = f"hosted-zones{branch}.yaml"
 
-    client_vars = get_client_config_file(client, filename)
-    if len(client_vars) == 0:
-        raise ValueError(f"Could not load '{filename}' for client '{client}'")
-
-    _process_client_vars(**kwargs, client_vars=client_vars)
+    _process_client_vars(**kwargs, client_vars={})

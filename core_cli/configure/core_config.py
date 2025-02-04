@@ -1,381 +1,477 @@
-""" Manage the ~/core/config configuration file """
+"""Manage the ~/core/config configuration file"""
 
-from datetime import datetime
-import os
-import sys
-import configparser
-import json
-from typing import Optional
-import boto3
-from botocore.exceptions import ClientError
+import core_framework as util
+import core_db as db
 
-import core_helper.aws as aws
-
-from .client_vars import get_region_role
-
-aws_credentials = None
-
-
-def assume_automation_role(**kwargs) -> Optional[dict]:
-    """assume the core automation role, if there is no role because you haven't even created it, then we try to assume 'Developer' role"""
-    global aws_credentials
-
-    if aws_credentials:
-        return aws_credentials
-
-    try:
-        role_name = kwargs.get("automation_role", None)
-        # The organization information should be in the billing_account.  If not, let's assume we are logged in tot he billing account and that would man
-        # client_account has the right account number information.
-        account_number = kwargs.get(
-            "billing_account", kwargs.get("client_account", None)
-        )
-
-        if not account_number:
-            raise ValueError(
-                "One of 'billing_account' or 'client_account' must be provided."
-            )
-
-        if role_name:
-            role_arn = f"arn:aws:iam::{account_number}:role/{role_name}"
-            print(f"Attempting to assume '{role_name}' role: {role_arn}")
-            aws_credentials = aws.assume_role(role=role_arn)
-            if aws_credentials:
-                return aws_credentials
-
-        # Didn't work with the configured role, so, let's try "Developer" role
-        role_arn = f"arn:aws:iam::{account_number}:role/RBAC_Developer"
-        print(f"Attempting to assume 'RBAC_Developer' role: {role_arn}")
-
-        aws_credentials = aws.assume_role(role=role_arn)
-
-    except ClientError as e:
-        if "AccessDenied" in str(e):
-            print(
-                f"You do not have the correct permissions to assume the automation role [{role_name}].  We will continue ..."
-            )
-        else:
-            raise OSError(f"Error assuming role {e}") from e
-
-    return aws_credentials
-
-
-def get_configuration_file():
-    """Return the path to the configuration file."""
-    config_folder = os.path.expanduser("~/.config")
-    if not os.path.exists(config_folder):
-        os.makedirs(config_folder, exist_ok=True)
-    config_folder = os.path.join(config_folder, "core")
-    if not os.path.exists(config_folder):
-        os.makedirs(config_folder, exist_ok=True)
-    config_file = os.path.join(config_folder, "config")
-    return config_file
-
-
-def _get_core_configurator() -> configparser.ConfigParser:
-    """Read the core configuration configuration parser filled with."""
-    config = configparser.ConfigParser()
-
-    try:
-        config_file = get_configuration_file()
-        config.read(config_file)
-
-    except PermissionError:
-        print(
-            "WARNING: Permission denied when trying to create or read the configuration file."
-        )
-    except configparser.Error as e:
-        print(f"WARNING: Error reading configuration file: {e}")
-    except FileNotFoundError as e:
-        print(f"WARNING: File not found error: {e}")
-
-    return config
-
-
-def get_core_config_data(client: str) -> dict:
-    """
-    Read the configuration for the specified client, and if the client
-    isn't found, create a new configuration file for the client.
-
-    Args:
-        client (str): the alias name for the organization
-    """
-
-    config = _get_core_configurator()
-    if config.has_section(client):
-        return dict(config.items(client))
-    return {}
-
-
-def set_config_value(config, client, prompt, key, default_value):
-    """Read the user input from the console and set the configuration value."""
-    if config.has_option(client, key):
-        previous_value = config.get(client, key)
-    else:
-        previous_value = default_value
-    new_value = input(prompt.format(previous_value))
-    if not new_value:
-        new_value = previous_value
-    if new_value == "-":
-        new_value = ""
-    config.set(client, key, new_value)
-
-
-def get_organizations_information(**kwargs):
-    """return organization information for the AWS Profile"""
-    organization_id = ""
-    account_id = ""
-    account_name = ""
-    try:
-        region, role = get_region_role(**kwargs)
-        client = aws.org_client(region=region, role=role)
-        orginfo = client.describe_organization()
-        if "Organization" in orginfo:
-            organization_id = orginfo["Organization"]["Id"]
-            account_id = orginfo["Organization"]["MasterAccountId"]
-            response = client.describe_account(AccountId=account_id)
-            if "Account" in response:
-                account_name = response["Account"]["Name"]
-    except Exception:  # pylint: disable=broad-except
-        pass
-
-    return organization_id, account_id, account_name
-
-
-def get_ou_id_by_name(ou_name, organizational_units):
-    """Return the OU Id from its name in the list of OU's provided.  Case inensiive search."""
-    for ou in organizational_units:
-        if ou["Name"].lower() == ou_name.lower():
-            return ou["Id"]
-    return None
-
-
-def list_accounts_for_ou(ou_id):
-    """Return all the accounts under the specific OU"""
-    try:
-        # Create an Organizations client
-        org_client = boto3.client("organizations")
-
-        # Initialize pagination
-        paginator = org_client.get_paginator("list_accounts_for_parent")
-
-        # Iterate through paginated results
-        accounts = []
-        for page in paginator.paginate(ParentId=ou_id):
-            accounts.extend(page["Accounts"])
-
-        return accounts
-    except ClientError as e:
-        print(f"Error occurred: {e}")
-        return []
-
-
-def list_organizational_units(root_id, **kwargs):
-    """Get the organization units UNDER the root_id specified.  Can use in a hierarchy"""
-    try:
-        # Create an Organizations client
-        region, role = get_region_role(**kwargs)
-        client = aws.org_client(region=region, role=role)
-
-        # Initialize pagination
-        paginator = client.get_paginator("list_organizational_units_for_parent")
-
-        # Iterate through paginated results
-        organizational_units = []
-        for page in paginator.paginate(ParentId=root_id):
-            organizational_units.extend(page["OrganizationalUnits"])
-
-        return organizational_units
-    except ClientError as e:
-        if "InvalidInputException" in str(e) or "AccessDenied" in str(e):
-            print(
-                "You do not have the correct permissions to list organizational units.  We will continue ..."
-            )
-            return []
-        raise OSError(f"Error occurred: {e}") from e
-
-
-def list_organization_accounts(**kwargs):
-    """List all accounts in the organization"""
-    try:
-        # Create an Organizations client
-        region, role = get_region_role(**kwargs)
-        client = aws.org_client(region=region, role=role)
-
-        # Initialize pagination
-        paginator = client.get_paginator("list_accounts")
-
-        # Iterate through paginated results
-        accounts = []
-        for page in paginator.paginate():
-            accounts.extend(page["Accounts"])
-
-        return accounts
-    except ClientError as e:
-        print(f"Error occurred: {e}")
-        return None
-
-
-def list_roles_with_keywords(substrings, **kwargs):
-    """get a list of roles with the keywords in their name"""
-    try:
-        # Create an IAM client
-        region, role = get_region_role(**kwargs)
-        client = aws.iam_client(region=region, role=role)
-
-        # Initialize pagination
-        paginator = client.get_paginator("list_roles")
-
-        # Iterate through paginated results
-        matching_roles = []
-        for page in paginator.paginate():
-            for role in page["Roles"]:
-                role_name = role["RoleName"]
-                if any(
-                    substring.lower() in role_name.lower() for substring in substrings
-                ):
-                    matching_roles.append(role_name)
-
-        return matching_roles
-    except ClientError as e:
-        print(f"Error occurred: {e}")
-        return None
-
-
-class DateTimeEncoder(json.JSONEncoder):
-    """handle ISO data/time fields in JSON objects"""
-
-    def default(self, o):
-        if isinstance(o, datetime):
-            return o.isoformat()
-        return super().default(o)
+from ..console import cprint, get_input
+from .client_config import get_client_config_file
+from core_framework.constants import (
+    P_AWS_PROFILE,
+    P_AWS_REGION,
+    P_SCOPE,
+    P_CLIENT,
+    P_CLIENT_NAME,
+    P_DOMAIN,
+    P_CLIENT_REGION,
+    P_ORGANIZATION_ID,
+    P_USERNAME,
+    P_CURRENT_ACCOUNT,
+    P_CDK_DEFAULT_ACCOUNT,
+    P_CDK_DEFAULT_REGION,
+    P_IAM_ACCOUNT,
+    P_AUTOMATION_ACCOUNT,
+    P_SECURITY_ACCOUNT,
+    P_AUDIT_ACCOUNT,
+    P_NETWORK_ACCOUNT,
+    P_REGION,
+    P_MASTER_REGION,
+    P_DOCUMENT_BUCKET_NAME,
+    P_UI_BUCKET_NAME,
+    P_ARTEFACT_BUCKET_NAME,
+    P_BUCKET_NAME,
+    P_BUCKET_REGION,
+    P_TEMPLATE,
+    P_STACK_NAME,
+    P_STACK_PARAMETERS,
+    P_ORGANIZATION_ID,
+    P_ORGANIZATION_NAME,
+    P_ORGANIZATION_EMAIL,
+    P_ORGANIZATION_ACCOUNT,
+    P_AUTOMATION_TYPE,
+    P_TASKS,
+    P_UNITS,
+    P_PORTFOLIO,
+    P_APP,
+    P_BRANCH,
+    P_BUILD,
+    P_COMPONENT,
+    P_ENVIRONMENT,
+    P_DYNAMODB_HOST,
+    P_DYNAMODB_REGION,
+    P_LOG_AS_JSON,
+    P_VOLUME,
+    P_LOG_DIR,
+    P_DELIVERED_BY,
+    P_LOCAL_MODE,
+    P_USE_S3,
+    P_ENFORCE_VALIDATION,
+    P_INVOKER_ARN,
+    P_INVOKER_NAME,
+    P_INVOKER_REGION,
+    P_API_LAMBDA_ARN,
+    P_API_LAMBDA_NAME,
+    P_API_HOST_URL,
+    P_EXECUTE_LAMBDA_ARN,
+    P_START_RUNNER_LAMBDA_ARN,
+    P_DEPLOYSPEC_COMPILER_LAMBDA_ARN,
+    P_COMPONENT_COMPILER_LAMBDA_ARN,
+    P_RUNNER_STEP_FUNCTION_ARN,
+    P_TAGS,
+    P_PROJECT,
+    P_BIZAPP,
+    P_CLIENT_TABLE_NAME,
+    P_PORTFOLIOS_TABLE_NAME,
+    P_APPS_TABLE_NAME,
+    P_ZONES_TABLE_NAME,
+    P_ITEMS_TABLE_NAME,
+    P_EVENTS_TABLE_NAME,
+)
 
 
 def update_core_config(**kwargs):
     """Make changes to and update the core configuration file."""
 
-    aws_profile = kwargs.get("aws_profile")
+    client = kwargs.get(P_CLIENT)
+    aws_profile = kwargs.get(P_AWS_PROFILE)
 
-    print(f"Core Automation Configuration\n" f"AWS Profile: {aws_profile}\n")
+    cprint("Core Automation Configuration\n", style="bold undeerline")
+    cprint(f"AWS Profile: [green]{aws_profile}[/green]\n")
 
-    client = kwargs.get("client")
+    config = get_client_config_file(kwargs)
 
-    config = _get_core_configurator()
-
-    if kwargs.get("show"):
-        config.write(sys.stdout)
-        return
-
-    if not config.has_section(client):
-        config.add_section(client)
-
-    default_account = kwargs.get("client_account")
-
-    organization_id, organization_account, organization_name = (
-        get_organizations_information()
-    )
-    if organization_id:
-
-        print("HINT:")
-        print(
-            f"Organization: {organization_id}  Account: {organization_account}  Name: {organization_name or '<unknown>'}"
-        )
-        print("Current CORE Organization Acocunts:")
-
-        organizational_units = list_organizational_units(organization_id, **kwargs)
-        if organizational_units:
-            ou_id = get_ou_id_by_name("core", organizational_units)
-            accounts = list_accounts_for_ou(ou_id, **kwargs)
-            for account in accounts:
-                print(f"  Account ID: {account['Id']}  Name: ({account['Name']})")
-    else:
-        print("We tried to find Hints.  But you have no permissions")
-
-    keywords = ["Core", "Automation", "Developer"]
-
-    # Retrieve the list of matching roles
-    matching_roles = list_roles_with_keywords(keywords, **kwargs)
-
-    # Print the list of matching roles or a message if none are found
-    if matching_roles:
-        print("\nHere are some roles you might consider as the automation role:")
-        for role in matching_roles:
-            print(f"  - {role}")
-
-    region_default = "ap-southeast-1"
-
-    print(
-        f"\nEnter configuration values for client: {client}\n"
-        f"Enter a dash (-) to remove the value"
-    )
-
+    # prompt for each P_ value
     prompts_keys = [
         (
-            "Default client region (where your landing zones are)       [{}]: ",
-            "client_region",
-            region_default,
+            "AWS Profile Description",
+            "AWS Profile for this application [{}]: ",
+            P_AWS_PROFILE,
+            util.get_aws_profile,
         ),
         (
+            "AWS Region Description",
+            "AWS Region for this application (this can default from your AWS Cli configuration) [{}]: ",
+            P_AWS_REGION,
+            util.get_region,
+        ),
+        (
+            "Client Slug Description",
+            "Client slug (short name to identify the client)            [{}]: ",
+            P_CLIENT,
+            util.get_client,
+        ),
+        (
+            "Scope Prefix Description",
+            "Scope prefix (different context in the same automation account) [{}]: ",
+            P_SCOPE,
+            util.get_automation_scope,
+        ),
+        (
+            "Client Name Description",
+            "Client name (such as the management account name)          [{}]: ",
+            P_CLIENT_NAME,
+            util.get_client_name,
+        ),
+        (
+            "Default Client Region Description",
+            "Default client region (where your organization is located)  [{}]: ",
+            P_CLIENT_REGION,
+            util.get_client_region,
+        ),
+        (
+            "Domain Name Description",
+            "Domain name (used for the domain name of the appliation)   [{}]: ",
+            P_DOMAIN,
+            util.get_domain,
+        ),
+        (
+            "Automation Account Description",
             "Automation (Build) account                                 [{}]: ",
-            "automation_account",
-            default_account,
+            P_AUTOMATION_ACCOUNT,
+            util.get_automation_account,
         ),
         (
+            "Automation Region Description",
             "Automation (Build) region of the engine and CMDB database  [{}]: ",
-            "master_region",
-            region_default,
+            P_MASTER_REGION,
+            util.get_automation_region,
         ),
         (
+            "Bucket Region Description",
             "Automation (Build) region of the FACTS/Artefacts S3 bucket [{}]: ",
-            "bucket_region",
-            region_default,
+            P_BUCKET_REGION,
+            util.get_bucket_region,
         ),
         (
-            "Automation Role name                                       [{}]: ",
-            "automation_role",
-            "AutomationRole",
-        ),
-        (
+            "Organization Account Description",
             "Organization/Billing/Control Tower/SSO account             [{}]: ",
-            "organization_account",
-            organization_account,
+            P_ORGANIZATION_ACCOUNT,
+            util.get_organization_account,
         ),
         (
+            "Organization ID Description",
             "Organization id                                            [{}]: ",
-            "organization_id",
-            organization_id,
+            P_ORGANIZATION_ID,
+            util.get_organization_id,
         ),
         (
-            "IAM Account                                                [{}]: ",
-            "iam_account",
-            default_account,
+            "Audit Account Description",
+            "Audit/Log/Cloudwatch/KMS/Secrets Account (shared For Zones) [{}]: ",
+            P_AUDIT_ACCOUNT,
+            util.get_audit_account,
         ),
         (
-            "Audit/Log/Cloudwatch/KMS/Secrets Account                   [{}]: ",
-            "audit_account",
-            default_account,
-        ),
-        (
+            "Security Account Description",
             "Security Hub/Guard Duty/SEIM Account                       [{}]: ",
-            "security_account",
-            default_account,
+            P_SECURITY_ACCOUNT,
+            util.get_security_account,
         ),
         (
-            "Scope prefix (different DB in the same automation account) [{}]: ",
-            "scope_prefix",
-            "",
+            "Network Account Description",
+            "Network/Transit Gateway/VPN Account/VPC's/Firewalls        [{}]: ",
+            P_NETWORK_ACCOUNT,
+            util.get_network_account,
+        ),
+        (
+            "IAM Account Description",
+            "AWS Account ID for Identity Management(IAM)                [{}]: ",
+            P_IAM_ACCOUNT,
+            util.get_iam_account,
+        ),
+        (
+            "Automation Account Description",
+            "AWS Account ID for Automation (Build)                      [{}]: ",
+            P_AUTOMATION_ACCOUNT,
+            util.get_automation_account,
+        ),
+        (
+            "Security Account Description",
+            "AWS Account ID for Security Hub/Guard Duty/SEIM            [{}]: ",
+            P_SECURITY_ACCOUNT,
+            util.get_security_account,
+        ),
+        (
+            "Document Bucket Name Description",
+            "Automation Documeation Bucket Name (in S3)                [{}]: ",
+            P_DOCUMENT_BUCKET_NAME,
+            util.get_document_bucket_name,
+        ),
+        (
+            "UI Bucket Name Description",
+            "Automation Browser UI Bucket Name (in S3)                [{}]: ",
+            P_UI_BUCKET_NAME,
+            util.get_ui_bucket_name,
+        ),
+        (
+            "Artefact Bucket Name Description",
+            "Automation Artefacts Bucket Name (in S3)                [{}]: ",
+            P_ARTEFACT_BUCKET_NAME,
+            util.get_artefact_bucket_name,
+        ),
+        (
+            "Bucket Name Description",
+            "Automation Packages Bucket Name (in S3)                [{}]: ",
+            P_BUCKET_NAME,
+            util.get_bucket_name,
+        ),
+        (
+            "Bucket Region Description",
+            "Automation Artefacts/Packages Bucket Region (in S3)    [{}]: ",
+            P_BUCKET_REGION,
+            util.get_bucket_region,
+        ),
+        (
+            "Organization Name Description",
+            "AWS Oranization Name (AWS Management Account Name)    [{}]: ",
+            P_ORGANIZATION_NAME,
+            util.get_organization_name,
+        ),
+        (
+            "Organization Email Description",
+            "AWS Oranization Email (AWS Management Account Email)    [{}]: ",
+            P_ORGANIZATION_EMAIL,
+            util.get_organization_email,
+        ),
+        (
+            "Automation Type Description",
+            "Default type of deployment ({V_DEPLOYSPEC} or {VPIPELINE}) [{}]: ",
+            P_AUTOMATION_TYPE,
+            util.get_automation_type,
+        ),
+        (
+            "Portfolio Description",
+            "Default portfolio/bizapp slug (short name to identify the portfolio) [{}]: ",
+            P_PORTFOLIO,
+            util.get_portfolio,
+        ),
+        (
+            "Application Description",
+            "Default application slug (short name to identify the application) [{}]: ",
+            P_APP,
+            util.get_app,
+        ),
+        (
+            "Branch Description",
+            "Default branch (git branch) [{}]: ",
+            P_BRANCH,
+            util.get_branch,
+        ),
+        (
+            "Build Description",
+            "Default build number (git commit hash) [{}]: ",
+            P_BUILD,
+            util.get_build,
+        ),
+        (
+            "Environment Description",
+            "Default evnrionment name (PRD, DEV, STAGE, SIT, etc) [{}]: ",
+            P_ENVIRONMENT,
+            util.get_environment,
+        ),
+        (
+            "Dynamodb Host Description",
+            "Dynamodb Host Name overrride [{}]: ",
+            P_DYNAMODB_HOST,
+            util.get_dynamodb_host,
+        ),
+        (
+            "Dynamodb Region Description",
+            "Dynamodb Region Name override [{}]: ",
+            P_DYNAMODB_REGION,
+            util.get_dynamodb_region,
+        ),
+        (
+            "Local Mode Description",
+            'Local mode.  Use "True" for docker containers and you don\'t wanto to use lambda functions (True/False) [{}]: ',
+            P_LOCAL_MODE,
+            util.is_local_mode,
+        ),
+        (
+            "Use S3 Description",
+            'Use S3 for storage even in Local mode (True/False).  If "True" the VOLUMNE configuration is [{}]: ',
+            P_USE_S3,
+            util.is_use_s3,
+        ),
+        (
+            "Volume Description",
+            "Data Storage volume/directory if NOT using S3 for storage [{}]: ",
+            P_VOLUME,
+            util.get_storage_volume,
+        ),
+        (
+            "Log as JSON Description",
+            "Log as JSON when outputting to console log or file logs [{}]: ",
+            P_LOG_AS_JSON,
+            util.is_json_log,
+        ),
+        (
+            "Log Directory Description",
+            "Log directory for log files [{}]: ",
+            P_LOG_DIR,
+            util.get_log_dir,
+        ),
+        (
+            "Delivered By Description",
+            "Delivered by (name of the person or team) [{}]: ",
+            P_DELIVERED_BY,
+            util.get_delivered_by,
+        ),
+        (
+            "Enforce Validation Description",
+            "Enforce validation of the deployment specification [{}]: ",
+            P_ENFORCE_VALIDATION,
+            util.is_enforce_validation,
+        ),
+        (
+            "Invoker Lambda ARN Description",
+            "Override the Invoker Lambda function ARN [{}] ",
+            P_INVOKER_ARN,
+            util.get_invoker_lambda_arn,
+        ),
+        (
+            "Invoker Lambda Name Description",
+            "Override the Invoker Lambda function name [{}] ",
+            P_INVOKER_NAME,
+            util.get_invoker_lambda_name,
+        ),
+        (
+            "Invoker Lambda Region Description",
+            "Override the Invoker Lambda function region [{}] ",
+            P_INVOKER_REGION,
+            util.get_invoker_lambda_region,
+        ),
+        (
+            "API Lambda ARN Description",
+            "Override the API Lambda function ARN [{}] ",
+            P_API_LAMBDA_ARN,
+            util.get_api_lambda_arn,
+        ),
+        (
+            "API Lambda Name Description",
+            "Override the API Lambda function name [{}] ",
+            P_API_LAMBDA_NAME,
+            util.get_api_lambda_name,
+        ),
+        (
+            "API Host URL Description",
+            "Override the API Host URL [{}] ",
+            P_API_HOST_URL,
+            util.get_api_host_url,
+        ),
+        (
+            "Execute Lambda ARN Description",
+            "Override the Execute Actions/Scripts Lambda function ARN [{}] ",
+            P_EXECUTE_LAMBDA_ARN,
+            util.get_execute_lambda_arn,
+        ),
+        (
+            "Start Runner Lambda ARN Description",
+            "Override the Step-Function Start Runner Lambda function ARN [{}] ",
+            P_START_RUNNER_LAMBDA_ARN,
+            util.get_start_runner_lambda_arn,
+        ),
+        (
+            "DeploySpec Compiler Lambda ARN Description",
+            "Override the DeploySpec Compiler Lambda function ARN [{}] ",
+            P_DEPLOYSPEC_COMPILER_LAMBDA_ARN,
+            util.get_deployspec_compiler_lambda_arn,
+        ),
+        (
+            "Component Compiler Lambda ARN Description",
+            "Override the Component Compiler Lambda function ARN [{}] ",
+            P_COMPONENT_COMPILER_LAMBDA_ARN,
+            util.get_component_compiler_lambda_arn,
+        ),
+        (
+            "Runner Step Function ARN Description",
+            "Override the Runner Step Function ARN [{}] ",
+            P_RUNNER_STEP_FUNCTION_ARN,
+            util.get_runner_step_function_arn,
+        ),
+        (
+            "Project Description",
+            "Default Project Name [{}] ",
+            P_PROJECT,
+            util.get_project,
+        ),
+        (
+            "Business Application Description",
+            "Default Business Application Name (relates to Portfolio) [{}] ",
+            P_BIZAPP,
+            util.get_bizapp,
+        ),
+        (
+            "Client Table Name Description",
+            "Default Client FACTS DynamoDB Table Name [{}] ",
+            P_CLIENT_TABLE_NAME,
+            util.get_client_table_name,
+        ),
+        (
+            "Portfolio Table Name Description",
+            "Default Portfolio FACTS DynamoDB Table Name [{}] ",
+            P_PORTFOLIOS_TABLE_NAME,
+            util.get_portfolios_table_name,
+        ),
+        (
+            "Apps Table Name Description",
+            "Default Apps FACTS DynamoDB Table Name [{}] ",
+            P_APPS_TABLE_NAME,
+            util.get_apps_table_name,
+        ),
+        (
+            "Zones Table Name Description",
+            "Default Zones FACTS DynamoDB Table Name [{}] ",
+            P_ZONES_TABLE_NAME,
+            util.get_zones_table_name,
+        ),
+        (
+            "Deployments Table Name Description",
+            "Default Deployments DynamoDB Table Name [{}] ",
+            P_ITEMS_TABLE_NAME,
+            util.get_items_table_name,
+        ),
+        (
+            "Events Table Name Description",
+            "Default Deployment Events DynamoDB Table Name [{}] ",
+            P_EVENTS_TABLE_NAME,
+            util.get_events_table_name,
         ),
     ]
 
-    for prompt, key, default_value in prompts_keys:
-        set_config_value(config, client, prompt, key, default_value)
+    cprint(f"\nEnter configuration values for client: {client}\n")
+
+    for description, prompt, key, default_factory in prompts_keys:
+        set_config_value(config, description, prompt, key, default_factory)
 
     print("OK, we are done.\n\nHere is the configuration we have for you:\n")
 
-    config_file = get_configuration_file()
 
-    # Write the updated configuration back to the file
-    with open(config_file, "w", encoding="utf8") as configfile:
-        config.write(configfile)
+def set_config_value(config: dict, description, prompt, key, default_factory):
+    """Set a value in the configuration file"""
 
-    config.write(sys.stdout)
+    default_value = default_factory()
+
+    if description:
+        cprint(description)
+        value = config.get(key)
+        if value:
+            cprint(f"Current override value: [green]{value}[/green]")
+        cprint(f"Current derrived value: [green]{default_value}[/green]")
+
+    cprint("Enter a dash (-) to remove the value")
+
+    value = get_input(prompt.format(default_value), None, default_value)
+
+    if value == "-":
+        config.pop(key)
+    elif value:
+        config[key] = value

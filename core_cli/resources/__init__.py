@@ -1,1 +1,1 @@
-""" Resources package """
+"""Resources package"""

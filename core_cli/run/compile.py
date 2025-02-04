@@ -1,4 +1,4 @@
-""" handle the compile task """
+"""handle the compile task"""
 
 
 def task_compile(**kwargs):

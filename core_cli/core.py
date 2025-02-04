@@ -17,6 +17,7 @@ from core_framework.constants import (  # noqa: E402
     P_CLIENT,
     P_AWS_PROFILE,
     P_CORRELATION_ID,
+    P_USERNAME,
 )
 
 import core_helper.aws as aws  # noqa: E402
@@ -36,9 +37,10 @@ from core_cli.info import get_info_command  # noqa: E402
 from core_cli.bootstrap import get_bootstrap_command  # noqa: E402
 from core_cli.init import get_init_command  # noqa: E402
 from core_cli.domain import get_domain_command  # noqa: E402
+from core_cli.facts import get_facts_command  # noqa: E402
 
 from core_cli.environment import set_environment  # noqa: E402
-
+from core_cli.console import get_iam_user_name  # noqa: E402
 
 # Commands are built during the parser configuration.
 COMMANDS: dict[str, tuple[str, Callable]] = {}
@@ -103,6 +105,7 @@ def parse_args(args: list[str], common_parser=None) -> dict:
     COMMANDS.update(get_bootstrap_command(command_parser))
     COMMANDS.update(get_init_command(command_parser))
     COMMANDS.update(get_domain_command(command_parser))
+    COMMANDS.update(get_facts_command(command_parser))
 
     pargs = vars(core_parser.parse_args(args))
 
@@ -120,6 +123,8 @@ def add_current_user_to_data(data):
 
         data[P_CORRELATION_ID] = util.get_correlation_id()
         data[P_IDENTITY] = aws.get_identity()
+        data[P_USERNAME] = get_iam_user_name()
+        # data[P_USERNAME] = aws.get_username()
 
     except ProfileNotFound as e:
         raise ValueError(
