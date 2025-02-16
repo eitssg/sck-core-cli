@@ -8,7 +8,7 @@ import core_framework as util
 from core_framework.constants import ENV_API_HOST_URL, P_IDENTITY, P_CORRELATION_ID
 
 from core_api.api import get_app, generate_user_agent
-from core_api.api import (
+from core_api.api.tools import (
     HDR_AUTHORIZATION,
     HDR_X_CORRELATION_ID,
     HDR_USER_AGENT,

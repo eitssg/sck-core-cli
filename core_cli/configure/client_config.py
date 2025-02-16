@@ -1,68 +1,59 @@
 """load files from the client configuration file"""
-
+from typing import Any
 import os
-from typing import Optional
+
 import core_framework as util
 from core_framework.constants import (
     CTX_CONTEXT,
-    P_CLIENT,
-    P_PORTFOLIO,
-    P_APP,
-    P_BRANCH,
-    P_BUILD,
+    P_CLIENT
 )
 
 from ..apiclient import APIClient
 
-api_client = APIClient.get_instance()
 
-
-def find_file(file_names: list[str], start_path: str = ".") -> Optional[str]:
+def find_file(file_names: list[str], start_path: str = ".") -> str | None:
     """
     Find the first match of file_names in the current folder.  If nto found, then
     search the parent folder and continue until one file is found or ther are no more
     parents
     """
-    for root, _, files in os.walk(start_path):
-        for file_name in file_names:
-            if file_name in files:
-                return os.path.join(root, file_name)
-        parent = os.path.dirname(root)
-        if parent:
-            result = find_file(file_names, parent)
-            if result:
-                return result
+    path = os.path.abspath(start_path)
+    for file_name in file_names:
+        if os.path.exists(os.path.join(path, file_name)):
+            return os.path.join(path, file_name)
+    parent = os.path.dirname(path)
+    if parent and parent != path:
+        return find_file(file_names, parent)
     return None
 
 
-def load_context_client(data: dict) -> dict:
+def load_context_client(args: dict[str, str | None]) -> dict[str, Any]:
     """load the context from the facts API /v1/facts/{client} using the APIClient object"""
 
-    client = data.get(P_CLIENT, "")
-    portfolio = data.get(P_PORTFOLIO, "")
-    app = data.get(P_APP, "")
-    branch = data.get(P_BRANCH, "")
-    build = data.get(P_BUILD, "")
-    prn = f"prn:{portfolio}:{app}:{branch}:{build}"
+    client = args.get(P_CLIENT, "")
 
-    params = {"prn": prn}
+    api_client = APIClient.get_instance()
+    headers = api_client.get_headers(args)
 
-    result = api_client.get(f"/v1/facts/{client}", params=params)
+    result = api_client.get(f"/api/v1/registry/client/{client}", headers=headers)
+
+    json_result = result.json()
+    context = json_result.get("data", {})
     if result.status_code != 200:
-        raise ValueError(f"Could not load the context for the client {client}")
-    data = result.json()
-    return {CTX_CONTEXT: data}
+        error = context.get("message", "Unknown error")
+        raise ValueError(f"Could not load the context for the client {client}. {error}")
+    return {CTX_CONTEXT: context}
 
 
-def load_context_file(file_path: str) -> dict:
+def load_context_file(file_path: str) -> dict[str, Any]:
     """Load the sdk.json or cdk.json file"""
     if os.path.exists(file_path):
         with open(file_path, "r", encoding="utf8") as file:
             return util.read_json(file)
-    return {"context": {}}
+    return {CTX_CONTEXT: {}}
 
 
-def get_client_config_file(data: dict) -> dict:
+def get_client_context(data: dict) -> dict:
     """Return the contents of the filename as a dictionary"""
     file_names = ["cdk.json", "sdk.json"]
     file_path = find_file(file_names, os.getcwd())

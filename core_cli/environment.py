@@ -1,10 +1,38 @@
+""" Manage the environment.  This is the FIRST module that is loade from the command line """
+
+import gettext
 import os
+
 from rich.table import Table
 from rich import box
+import dotenv
 
-from .console import cprint
+# see the BUG in the configration module.
+# I need to keep track of what ENV variables were set in the .env file and which
+# were set be the OS.  I have not done so yet.
+dotenv.load_dotenv(override=True)
 
-from core_framework.constants import (
+
+# Initialize the translation function
+def setup_i18n(locale: str = "en"):
+    locales_dir = os.path.join(
+        os.path.abspath(os.path.dirname(__file__)), "..", "locale"
+    )
+    gettext.bindtextdomain("messages", locales_dir)
+    gettext.textdomain("messages")
+    translation = gettext.translation(
+        "messages", locales_dir, languages=[locale], fallback=True
+    )
+    translation.install()
+    return translation.gettext
+
+
+_ = setup_i18n()
+
+# console loads models and models REQUIRES the os.envrion be set.  Dumb
+from .console import cprint  # noqa: E402
+
+from core_framework.constants import (  # noqa: E402
     ENV_AWS_PROFILE,
     ENV_AWS_REGION,
     ENV_TASKS,
@@ -34,7 +62,6 @@ from core_framework.constants import (
     ENV_START_RUNNER_LAMBDA_ARN,
     ENV_DEPLOYSPEC_COMPILER_LAMBDA_ARN,
     ENV_COMPONENT_COMPILER_LAMBDA_ARN,
-    ENV_RUNNER_STEP_FUNCTION_ARN,
     ENV_MASTER_REGION,
     ENV_AUTOMATION_ACCOUNT,
     ENV_ORGANIZATION_ACCOUNT,
@@ -59,6 +86,8 @@ from core_framework.constants import (
     ENV_UI_BUCKET_NAME,
     ENV_CDK_DEFAULT_ACCOUNT,
     ENV_CDK_DEFAULT_REGION,
+    ENV_CONSOLE,
+    ENV_LOG_LEVEL,
     P_AUTOMATION_TYPE,
     P_AWS_PROFILE,
     P_AWS_REGION,
@@ -88,7 +117,6 @@ from core_framework.constants import (
     P_START_RUNNER_LAMBDA_ARN,
     P_DEPLOYSPEC_COMPILER_LAMBDA_ARN,
     P_COMPONENT_COMPILER_LAMBDA_ARN,
-    P_RUNNER_STEP_FUNCTION_ARN,
     P_REGION,
     P_AUTOMATION_ACCOUNT,
     P_ORGANIZATION_ACCOUNT,
@@ -113,6 +141,9 @@ from core_framework.constants import (
     P_UI_BUCKET_NAME,
     P_CDK_DEFAULT_ACCOUNT,
     P_CDK_DEFAULT_REGION,
+    P_CONSOLE,
+    P_LOG_LEVEL,
+    V_EMPTY,
 )
 
 
@@ -149,7 +180,6 @@ argument_map: dict[str, str] = {
     P_START_RUNNER_LAMBDA_ARN: ENV_START_RUNNER_LAMBDA_ARN,
     P_DEPLOYSPEC_COMPILER_LAMBDA_ARN: ENV_DEPLOYSPEC_COMPILER_LAMBDA_ARN,
     P_COMPONENT_COMPILER_LAMBDA_ARN: ENV_COMPONENT_COMPILER_LAMBDA_ARN,
-    P_RUNNER_STEP_FUNCTION_ARN: ENV_RUNNER_STEP_FUNCTION_ARN,
     P_REGION: ENV_MASTER_REGION,
     P_DOMAIN: ENV_DOMAIN,
     P_IAM_ACCOUNT: ENV_IAM_ACCOUNT,
@@ -174,6 +204,8 @@ argument_map: dict[str, str] = {
     P_CORRELATION_ID: ENV_CORRELATION_ID,
     P_DOCUMENT_BUCKET_NAME: ENV_DOCUMENT_BUCKET_NAME,
     P_UI_BUCKET_NAME: ENV_UI_BUCKET_NAME,
+    P_CONSOLE: ENV_CONSOLE,
+    P_LOG_LEVEL: ENV_LOG_LEVEL,
 }
 
 env_map: dict[str, str] = {
@@ -206,7 +238,6 @@ env_map: dict[str, str] = {
     ENV_START_RUNNER_LAMBDA_ARN: P_START_RUNNER_LAMBDA_ARN,
     ENV_DEPLOYSPEC_COMPILER_LAMBDA_ARN: P_DEPLOYSPEC_COMPILER_LAMBDA_ARN,
     ENV_COMPONENT_COMPILER_LAMBDA_ARN: P_COMPONENT_COMPILER_LAMBDA_ARN,
-    ENV_RUNNER_STEP_FUNCTION_ARN: P_RUNNER_STEP_FUNCTION_ARN,
     ENV_MASTER_REGION: P_REGION,
     ENV_DOMAIN: P_DOMAIN,
     ENV_IAM_ACCOUNT: P_IAM_ACCOUNT,
@@ -231,6 +262,8 @@ env_map: dict[str, str] = {
     ENV_CORRELATION_ID: P_CORRELATION_ID,
     ENV_DOCUMENT_BUCKET_NAME: P_DOCUMENT_BUCKET_NAME,
     ENV_UI_BUCKET_NAME: P_UI_BUCKET_NAME,
+    ENV_CONSOLE: P_CONSOLE,
+    ENV_LOG_LEVEL: P_LOG_LEVEL,
 }
 
 
@@ -250,25 +283,36 @@ def get_environment(include_none: bool = False) -> dict[str, str]:
     return dict(sorted(env_vars.items()))
 
 
-def set_environment(data: dict[str, str]) -> None:
+def set_environment_from_args(
+    args: dict[str, str | None], *, ignore_none: bool = False, remove_none: bool = False
+) -> None:
     """
     Set environment variables from specified P_ paramters from the command line.
+    If you are calling after argparse, I highly recommend "ignore_none=True" as argparse sets ALL P_ paramtesr it
+    sees even if you don't specify it on the command line.
+
+    If you want to remove an environment variable, set the argement value to None and remove_none=True
 
     Args:
-        **kwargs: The commadline paramters used to set enviroment variables.
+        args: The commadline paramters used to set enviroment variables.
 
     """
-    for k, v in argument_map.items():
-        if k in data:
-            # kwargs will contain the P_ property even though the user didn't specify it..  It will be None.
-            value = data.get(k)
-            if value:  # skip if empty or None
-                os.environ[v] = value
+    for k, v in args.items():
+        if v is None and ignore_none:
+            continue
+        env_key = env_map.get(k)
+        if env_key:
+            if v is None and remove_none:
+                del os.environ[env_key]
+            else:
+                os.environ[env_key] = v if v else V_EMPTY
 
 
-def get_arguments(include_none: bool = False) -> dict[str, str | None]:
+def get_arguments_from_env(
+    env: dict | None = None, include_none: bool = False
+) -> dict[str, str | None]:
     """
-    Set the command line arguments from the environment variables.
+    Get the command line arguments from the environment variables.
 
     Args:
         include_none (bool, optional): Include None values in the dictionary. Defaults to None.
@@ -276,26 +320,32 @@ def get_arguments(include_none: bool = False) -> dict[str, str | None]:
     Returns:
         dict[str, str]: The command line arguments.
     """
-    args = {}
-    for k, v in env_map.items():
-        if include_none or k in os.environ:
-            args[v] = os.getenv(k, None)
-    # return the dictionary sorted by key name
+    if env is None:
+        env = dict(os.environ)
+    args: dict[str, str | None] = {}
+    for k, v in env.items():
+        arg_key = env_map.get(k)
+        if arg_key and (v or include_none):
+            args[arg_key] = v if v else None
     return dict(sorted(args.items()))
 
 
-def set_arguments_from_env(data: dict[str, str | None]) -> None:
+def args_to_env(arguments: dict[str, str | None]) -> dict[str, str]:
     """
-    Set the command line arguments from the environment variables.
+    Convert the command line arguments to environment variables.
 
     Args:
-        data (dict[str, str]): The environment variables.
+        arguments (dict[str, str | None]): The command line arguments.
+
+    Returns:
+        dict[str, str]: The environment variables.
     """
-    for k, v in env_map.items():
-        if k in os.environ:
-            value = os.getenv(k)
-            # Set to None if empty string
-            data[v] = value if value else None
+    envs: dict[str, str] = {}
+    for k, v in arguments.items():
+        env_key = argument_map.get(k)
+        if env_key:
+            envs[env_key] = V_EMPTY if v is None else v
+    return envs
 
 
 def print_environmnt():
@@ -311,3 +361,8 @@ def print_environmnt():
 
     cprint(table)
     cprint()
+
+
+def get_dotenv_config() -> dict[str, str | None]:
+    """Use the dotenv library to load only the .env configuration and return it as a dictionary"""
+    return dict(dotenv.dotenv_values())

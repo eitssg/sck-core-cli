@@ -2,6 +2,8 @@ from typing import Any
 import os
 import re
 from rich.console import Console
+from rich.prompt import Prompt
+
 import zipfile
 
 from core_helper.magic import MagicS3Client
@@ -39,22 +41,21 @@ def jprint(msg: Any | None = None):
 
 
 def get_input(
-    message: str, options: list[str] | None = None, default: str | None = None
-) -> str:
-    """get input from the user"""
-    if options is not None:
-        options_str = "/".join(options)
-        message = f"{message} [{options_str}]: "
+    message: str, choices: list[str] | None = None, default: str | None = None
+) -> str | None:
+    """get input from the user.  Loop until they enter something"""
     while True:
-        value = input(message)
-        if not value and default:
-            return default
-        if not options:
+        value = Prompt.ask(message, choices=choices, default=default)
+        if not value:
+            value = default
+        if choices:
+            if value:
+                y = any(value.lower() == x.lower() for x in choices)
+                if y:
+                    return value
+            console.print("Please select from the options.")
+        else:
             return value
-        y = any(value.lower() == x.lower() for x in options)
-        if y:
-            return value
-        print("Please select from the options.")
 
 
 def get_organization_info():
