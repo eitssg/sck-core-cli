@@ -1,4 +1,4 @@
-""" manage zones """
+"""manage zones"""
 
 from .zones import add_zones_parser, execute_zones
 

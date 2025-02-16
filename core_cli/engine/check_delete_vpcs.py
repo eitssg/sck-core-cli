@@ -1,4 +1,4 @@
-""" check if all VPCs are in the account_registry """
+"""check if all VPCs are in the account_registry"""
 
 import os
 import yaml

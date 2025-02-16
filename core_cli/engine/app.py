@@ -1,4 +1,4 @@
-""" Module that process app management commands """
+"""Module that process app management commands"""
 
 from ..cmdparser import ExecuteCommandsType
 

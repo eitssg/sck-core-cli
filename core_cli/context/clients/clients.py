@@ -18,8 +18,6 @@ from core_framework.constants import (
     P_ORGANIZATION_EMAIL,
     P_AUTOMATION_ACCOUNT,
     P_REGION,
-    P_CORRELATION_ID,
-    P_IDENTITY,
     P_MASTER_REGION,
     P_SECURITY_ACCOUNT,
     P_AUDIT_ACCOUNT,
@@ -33,18 +31,12 @@ from core_framework.constants import (
 )
 import core_framework as util
 
-from core_api.api.tools import HDR_AUTHORIZATION, HDR_X_CORRELATION_ID
-
 from core_cli.console import cprint
 from core_cli.cmdparser import ExecuteCommandsType
 from core_cli.apiclient import APIClient
 
 
-# Get the api_client singteton instance
-api_client = APIClient.get_instance()
-
-
-def show_cilent(data):
+def show_client(data):
 
     table = Table(title="Client Facts", box=box.SIMPLE)
     table.add_column("Name", justify="left", style="cyan")
@@ -56,25 +48,15 @@ def show_cilent(data):
     cprint(table)
 
 
-def get_headers(kwargs):
-    """get headers"""
-    credentials = kwargs.get(P_IDENTITY, {})
-    headers = {
-        HDR_AUTHORIZATION: f"Bearer {credentials.get('SessionToken')}",
-        HDR_X_CORRELATION_ID: kwargs.get(P_CORRELATION_ID, util.get_correlation_id()),
-    }
-
-    return headers
-
-
 def list_clients(**kwargs):
     """list clients"""
 
     cprint("\nList Clients\n", style="bold underline")
 
-    headers = get_headers(kwargs)
+    apiclient = APIClient.get_instance()
+    headers = apiclient.get_headers(kwargs)
 
-    response = APIClien().get("/api/v1/registry/clients", headers=headers)
+    response = apiclient.get("/api/v1/registry/clients", headers=headers)
     rest_data = response.json()
     data = rest_data.get("data", [])
 
@@ -92,8 +74,6 @@ def add_client(**kwargs):
     """add client"""
 
     cprint("\nSave Client Facts", style="bold underline")
-
-    headers = get_headers(kwargs)
 
     client = kwargs.get(P_CLIENT, None)
     if not client:
@@ -136,11 +116,13 @@ def add_client(**kwargs):
         or util.get_ui_bucket_name(client),
     }
 
-    response = api_client.post("/api/v1/registry/clients", headers=headers, json=data)
+    apiclient = APIClient.get_instance()
+    headers = apiclient.get_headers(kwargs)
+    response = apiclient.post("/api/v1/registry/clients", headers=headers, json=data)
     rest_data = response.json()
     data = rest_data.get("data", {})
 
-    show_cilent(data)
+    show_client(data)
 
 
 def update_client(**kwargs):
@@ -150,8 +132,6 @@ def update_client(**kwargs):
         raise ValueError("Client name is required")
 
     cprint("\nSave Client Facts", style="bold underline")
-
-    headers = get_headers(kwargs)
 
     keys = [
         P_SCOPE,
@@ -179,13 +159,15 @@ def update_client(**kwargs):
         key: kwargs[key] for key in keys if key in kwargs and kwargs[key] is not None
     }
 
-    request = api_client.patch(
+    apiclient = APIClient.get_instance()
+    headers = apiclient.get_headers(kwargs)
+    request = apiclient.patch(
         f"/api/v1/registry/client/{client}", headers=headers, json=data
     )
     rest_data = request.json()
     data = rest_data.get("data", {})
 
-    show_cilent(data)
+    show_client(data)
 
 
 def delete_client(**kwargs):
@@ -196,9 +178,10 @@ def delete_client(**kwargs):
 
     cprint("\nSaving client facts to the database...")
 
-    headers = get_headers(kwargs)
+    apiclient = APIClient.get_instance()
+    headers = apiclient.get_headers(kwargs)
 
-    response = api_client.delete(f"/api/v1/registry/client/{client}", headers=headers)
+    response = apiclient.delete(f"/api/v1/registry/client/{client}", headers=headers)
     rest_data = response.json()
     data = rest_data.get("data", {})
 
@@ -213,13 +196,14 @@ def get_client(**kwargs):
 
     cprint("\nGetting Client Facts\n", style="bold underline")
 
-    headers = get_headers(kwargs)
+    apiclient = APIClient.get_instance()
+    headers = apiclient.get_headers(kwargs)
 
-    response = api_client.get(f"/api/v1/registry/client/{client}", headers=headers)
+    response = apiclient.get(f"/api/v1/registry/client/{client}", headers=headers)
     rest_data = response.json()
     data = rest_data.get("data", {})
 
-    show_cilent(data)
+    show_client(data)
 
 
 TASKS: ExecuteCommandsType = {

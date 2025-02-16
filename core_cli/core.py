@@ -6,39 +6,38 @@ from typing import Callable
 import os
 import sys
 
-from botocore.exceptions import ClientError, ProfileNotFound  # noqa: E402
+from botocore.exceptions import ClientError, ProfileNotFound
 
-from dotenv import load_dotenv
+# Presently core_db requires the environment variables to be loaded.  It's initialized as part of loading the core_cli module.
+import core_cli.environment as environment  # noqa
 
-import core_framework as util  # noqa: E402
-from core_framework.constants import (  # noqa: E402
+import core_framework as util
+from core_framework.constants import (
     ENV_CLIENT,
     P_IDENTITY,
     P_CLIENT,
     P_AWS_PROFILE,
     P_CORRELATION_ID,
+    P_USERNAME,
 )
 
-import core_helper.aws as aws  # noqa: E402
+import core_helper.aws as aws
 
-# Presently core_db requires the environment variables to be loaded.  It's initialized as part of loading the core_cli module.
-load_dotenv(override=True)
-
-from core_cli import __version__  # noqa: E402
+from core_cli import __version__
 
 # Please note that core_cli requires initial environment variables to be set.  Really only core_db needs it, but....
-from core_cli.cmdparser.cmdparser import CoreArgumentParser  # noqa: E402
-from core_cli.run import get_run_command  # noqa: E402
-from core_cli.engine import get_engine_command  # noqa: E402
-from core_cli.organization import get_organization_command  # noqa: E402
-from core_cli.context import get_context_command  # noqa: E402
-from core_cli.info import get_info_command  # noqa: E402
-from core_cli.bootstrap import get_bootstrap_command  # noqa: E402
-from core_cli.init import get_init_command  # noqa: E402
-from core_cli.domain import get_domain_command  # noqa: E402
-
-from core_cli.environment import set_environment  # noqa: E402
-
+from core_cli.cmdparser import CoreArgumentParser
+from core_cli.run import get_run_command
+from core_cli.engine import get_engine_command
+from core_cli.organization import get_organization_command
+from core_cli.context import get_context_command
+from core_cli.info import get_info_command
+from core_cli.bootstrap import get_bootstrap_command
+from core_cli.init import get_init_command
+from core_cli.domain import get_domain_command
+from core_cli.facts import get_facts_command
+from core_cli.configure import get_configure_command
+from core_cli.console import get_iam_user_name
 
 # Commands are built during the parser configuration.
 COMMANDS: dict[str, tuple[str, Callable]] = {}
@@ -103,6 +102,8 @@ def parse_args(args: list[str], common_parser=None) -> dict:
     COMMANDS.update(get_bootstrap_command(command_parser))
     COMMANDS.update(get_init_command(command_parser))
     COMMANDS.update(get_domain_command(command_parser))
+    COMMANDS.update(get_facts_command(command_parser))
+    COMMANDS.update(get_configure_command(command_parser))
 
     pargs = vars(core_parser.parse_args(args))
 
@@ -120,6 +121,8 @@ def add_current_user_to_data(data):
 
         data[P_CORRELATION_ID] = util.get_correlation_id()
         data[P_IDENTITY] = aws.get_identity()
+        data[P_USERNAME] = get_iam_user_name()
+        # data[P_USERNAME] = aws.get_username()
 
     except ProfileNotFound as e:
         raise ValueError(
@@ -140,7 +143,10 @@ def execute(**kwargs) -> None:
     """
     add_current_user_to_data(kwargs)
 
-    set_environment(kwargs)
+    # TODO - Load the "context" from sdk.json or cdk.json and set the arguments
+
+    # after all arguments are set, including those paramters from the context, set the enviroment variables
+    environment.set_environment_from_args(kwargs, ignore_none=True)
 
     command = kwargs.get("command")
     if command in COMMANDS:
@@ -150,13 +156,16 @@ def execute(**kwargs) -> None:
 def register_module(**kwargs) -> tuple[str, str, str]:
     """
     Initialize module using the parameters specified
-    :param kwargs: Keyword Arguments of CLI definitions and other initialization data
-    :return: the name and description of the module for "help" response
+    Args:
+        kwargs: Keyword Arguments of CLI definitions and other initialization data
+
+    Return:
+        tuple[str, str, str]: the name and description of the module for "help" response
     """
     return "core", "Simple Cloud Kit Core CLI", __version__
 
 
-def core_module(args):
+def core_module(args: list) -> None:
     """
     This is the main entry point for the 'core' command when not run within
     the SCK.  This function duplicates what the SCK will do.  If you are using core.exe executable,
@@ -195,9 +204,11 @@ def main():
     """
     This is the main entry point for the script within the python
     enviroment.  Used during pip install to create the commend 'core'
+    see: pyproject.toml scripts section
     """
     core_module(sys.argv[1:])
 
 
+# If you run this file from python directly, we'll just call "main"
 if __name__ == "__main__":
     main()

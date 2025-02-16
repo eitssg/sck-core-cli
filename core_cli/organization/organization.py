@@ -1,4 +1,4 @@
-""" Manage the organization accounts """
+"""Manage the organization accounts"""
 
 from ..cmdparser import ExecuteCommandsType
 
@@ -33,7 +33,7 @@ def get_organization_command(subparsers) -> ExecuteCommandsType:
     org_parser.set_group_title(0, "Org Actions")
     org_parser.set_group_title(1, "Available Options")
 
-    subparsers = org_parser.add_subparsers(
+    subparsers = org_parser.add_custom_subparsers(
         dest="tasks", metavar="<task>", help="sub-command help"
     )
 

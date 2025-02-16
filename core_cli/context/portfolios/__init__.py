@@ -1,4 +1,4 @@
-""" CLI for Zones FACTS cotext data """
+"""CLI for Zones FACTS cotext data"""
 
 from .portfolio import get_portfolios_command, execute_portfolio
 

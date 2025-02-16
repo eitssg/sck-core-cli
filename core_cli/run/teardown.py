@@ -1,4 +1,4 @@
-""" handle the teardown task """
+"""handle the teardown task"""
 
 
 def task_teardown(**kwargs):

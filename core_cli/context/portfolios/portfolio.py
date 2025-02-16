@@ -10,14 +10,9 @@ from core_framework.constants import (
     P_BIZAPP,
 )
 
-from core_db.registry import PortfolioActions
-
-from core_cli.console import cprint
+from core_cli.console import cprint, jprint
 from core_cli.cmdparser import ExecuteCommandsType
 from core_cli.apiclient import APIClient
-
-# Get the api_client singteton instance
-api_client = APIClient.get_instance()
 
 
 def list_portfolios(**kwargs):
@@ -26,8 +21,12 @@ def list_portfolios(**kwargs):
 
     print("List Portfolios")
 
-    response = PortfolioActions.list(items="all")
-    data = response.get("Items", [])
+    api_client = APIClient.get_instance()
+    headers = api_client.get_headers(kwargs)
+
+    response = api_client.get("/api/v1/portfolios", headers=headers)
+    json_data = response.json()
+    data = json_data.get("data", [])
 
     table = Table(title="Portfolios", box=box.SIMPLE)
     table.add_column("Name", justify="left", style="cyan")
@@ -40,8 +39,9 @@ def list_portfolios(**kwargs):
 
 def add_portfolio(**kwargs):
     """add portfolio"""
-    print(kwargs)
-    print("Add Portfolio")
+    jprint(util.to_json(kwargs))
+
+    cprint("Add Portfolio", style="bold underline")
 
     data = {
         P_CLIENT: kwargs.get(P_CLIENT, util.get_client()),
@@ -50,6 +50,15 @@ def add_portfolio(**kwargs):
         P_DOMAIN: kwargs.get(P_DOMAIN, None),
         P_BIZAPP: kwargs.get(P_BIZAPP, kwargs.get(P_PORTFOLIO, None)),
     }
+
+    api_client = APIClient.get_instance()
+    headers = api_client.get_headers(kwargs)
+
+    response = api_client.post("/api/v1/portfolios", json=data, headers=headers)
+    json_data = response.json()
+    data = json_data.get("data", [])
+
+    cprint(data)
 
 
 def update_portfolio(**kwargs):

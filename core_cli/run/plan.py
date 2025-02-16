@@ -1,4 +1,4 @@
-""" handle the plan task """
+"""handle the plan task"""
 
 
 def task_plan(**kwargs):

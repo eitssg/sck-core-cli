@@ -1,4 +1,4 @@
-""" Handle the run command for the Core Automation subsystem """
+"""Handle the run command for the Core Automation subsystem"""
 
 import os
 import re
