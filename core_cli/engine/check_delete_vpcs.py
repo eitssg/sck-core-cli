@@ -1,7 +1,8 @@
 """check if all VPCs are in the account_registry"""
 
 import os
-import yaml
+
+import core_framework as util
 
 account_registry: dict = {}
 
@@ -17,8 +18,9 @@ def get_registry():
     global account_registry  # pylint: disable=global-statement
 
     if len(account_registry) == 0:
-        with open(cf("account-registry.yaml"), "r", encoding="utf-8") as f:
-            account_registry = yaml.safe_load(f)
+
+        account_registry = util.load_yaml_file(cf("account-registry.yaml"))
+
     return account_registry
 
 
@@ -48,10 +50,12 @@ DELTE_VPC_FILES = [
     cf("hosted-zones.yaml"),
 ]
 for file in DELTE_VPC_FILES:
+
     print(f"Checking {file}")
-    with open(file, "r", encoding="utf-8") as f:
-        vpcs = yaml.safe_load(f)
-        for name in vpcs["accounts"]:
-            FOUND = locate_account_name(name)
-            if not FOUND:
-                print(f"VPC {name} not found in account-registry.yaml")
+
+    vpcs = util.load_yaml_file(file)  # Load the YAML file to ensure it exists
+
+    for name in vpcs["accounts"]:
+        FOUND = locate_account_name(name)
+        if not FOUND:
+            print(f"VPC {name} not found in account-registry.yaml")

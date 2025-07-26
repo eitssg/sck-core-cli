@@ -1,10 +1,11 @@
 """Common commandline paramters"""
+
 import os
 import importlib
 
 import core_framework as util
 from core_framework.constants import P_PORTFOLIO, P_APP, P_BRANCH, P_BUILD
-from core_framework.models import ActionDefinition
+from core_framework.models import ActionSpec
 
 
 def add_common_parameters(parser):
@@ -78,7 +79,7 @@ def get_module_description(full_module_name):
     return description
 
 
-def load_actions_list_from_file(fn: str) -> list[ActionDefinition]:
+def load_actions_list_from_file(fn: str) -> list[ActionSpec]:
     """Load the actions list from the file"""
 
     if not os.path.exists(fn):
@@ -92,14 +93,14 @@ def load_actions_list_from_file(fn: str) -> list[ActionDefinition]:
         print(f"Invalid actions list in file: {fn}")
         return []
 
-    result: list[ActionDefinition] = []
+    result: list[ActionSpec] = []
     for raw_action in actions_list:
-        action = ActionDefinition(**raw_action)
+        action = ActionSpec(**raw_action)
         result.append(action)
     return result
 
 
-def save_actions_to_file(filename: str, actions_list: list[ActionDefinition]):
+def save_actions_to_file(filename: str, actions_list: list[ActionSpec]):
     """Save the actions list to the file"""
     data = [ad.model_dump() for ad in actions_list]
 

@@ -139,16 +139,6 @@ def deploy_roles(data, next) -> str:
     data[P_STACK_NAME] = f"{scope_prefix}core-automation-roles"
     data[P_TAGS] = tags
 
-    # action_definition = ActionDefinition(
-    #     Label="core-atuomation-roles-action",
-    #     Type="create_stack",
-    #     Params=ActionParams(
-    #         StackName="core-automation-roles",
-    #         TemplateUrl=os.path.join(cli_project_dir, "core-roles.yaml"),
-    #         StackParameters=data["stack_parameters"],
-    #     )
-    # )
-
     # Deploy the roles
     start_deploy_stack(**data)
 

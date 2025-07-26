@@ -3,7 +3,7 @@ import importlib
 
 import core_framework as util
 from core_framework import generate_task_payload
-from core_framework.models import ActionDefinition
+from core_framework.models import ActionSpec
 
 from core_execute.actionlib.factory import ActionFactory
 
@@ -14,7 +14,7 @@ from .common import (
     get_module_name_parts,
     get_module_description,
     load_actions_list_from_file,
-    save_actions_to_file
+    save_actions_to_file,
 )
 
 
@@ -234,7 +234,7 @@ def action_list(**kwargs):
     return {"result": module_names}
 
 
-def __add_action_to_list(action_list: list[ActionDefinition], action: ActionDefinition):
+def __add_action_to_list(action_list: list[ActionSpec], action: ActionSpec):
     """Add an action to the list"""
 
     for i in range(len(action_list)):
@@ -304,9 +304,7 @@ def action_add(**kwargs):
     return {"result": action_defs}
 
 
-def __label_is_in_actions_list(
-    label: str, actions_list: list[ActionDefinition]
-) -> bool:
+def __label_is_in_actions_list(label: str, actions_list: list[ActionSpec]) -> bool:
     """Check if the label is in the actions list"""
 
     for action in actions_list:

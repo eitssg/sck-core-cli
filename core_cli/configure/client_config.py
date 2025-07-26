@@ -1,12 +1,10 @@
 """load files from the client configuration file"""
+
 from typing import Any
 import os
 
 import core_framework as util
-from core_framework.constants import (
-    CTX_CONTEXT,
-    P_CLIENT
-)
+from core_framework.constants import CTX_CONTEXT, P_CLIENT
 
 from ..apiclient import APIClient
 

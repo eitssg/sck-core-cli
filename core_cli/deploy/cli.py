@@ -7,7 +7,6 @@ Then check core-network/_compiled/deploy.actions
 """
 import os
 import re
-import yaml
 import argparse
 import json
 
@@ -66,10 +65,14 @@ def run(args):
     client_vars_file = "../../../{}-config/client-vars.yaml".format(args.client)
     if args.client_vars is not None:
         client_vars_file = args.client_vars
-    with open(client_vars_file) as f:
-        client_vars = yaml.safe_load(f.read())
+
+    client_vars = util.load_yaml_file(
+        client_vars_file
+    )  # Load the YAML file to ensure it exists
+
     for key in client_vars:
         os.environ[key] = "{}".format(client_vars[key])
+
     print("client_vars:\n{}".format(util.to_yaml(client_vars)))
 
     accounts_file = "../{}-config/accounts.yaml".format(args.client)

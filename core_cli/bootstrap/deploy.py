@@ -4,7 +4,7 @@ from rich import box
 
 import core_helper.aws as aws
 import core_framework as util
-from core_framework.models import ActionDefinition
+from core_framework.models import ActionSpec
 from core_framework.constants import (
     P_REGION,
     P_TEMPLATE,
@@ -387,7 +387,7 @@ def start_deploy_stack(**kwargs):
     cprint("Process complete.")
 
 
-def start_action(action_definition: ActionDefinition):
+def start_action(action_definition: ActionSpec):
     parms = action_definition.Params
     data = {
         P_REGION: parms.Region,
