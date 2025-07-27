@@ -1,4 +1,4 @@
-""" Configuration Module Package .env file and context """
+"""Configuration Module Package .env file and context"""
 
 from typing import Callable
 from rich.table import Table

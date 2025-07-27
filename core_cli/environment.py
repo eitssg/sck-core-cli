@@ -1,4 +1,4 @@
-""" Manage the environment.  This is the FIRST module that is loade from the command line """
+"""Manage the environment.  This is the FIRST module that is loade from the command line"""
 
 import gettext
 import os
