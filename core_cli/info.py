@@ -86,7 +86,9 @@ def show_configuration(data):
 
     data[P_BUCKET_REGION] = bucket_region = util.get_bucket_region()
     data[P_BUCKET_NAME] = automation_bucket = util.get_bucket_name(client)
-    data[P_ARTEFACT_BUCKET_NAME] = artefacts_bucket = util.get_artefact_bucket_name(client)
+    data[P_ARTEFACT_BUCKET_NAME] = artefacts_bucket = util.get_artefact_bucket_name(
+        client
+    )
     data[P_DYNAMODB_HOST] = dynamodb_host = util.get_dynamodb_host()
     data[P_DYNAMODB_REGION] = dynamodb_region = util.get_dynamodb_region()
     data[P_USE_S3] = util.is_use_s3()
@@ -153,7 +155,9 @@ def get_info_command(subparsers) -> ExecuteCommandsType:
 
     DESCRIPTION = "Display information about the core subsystem"
 
-    config_parser = subparsers.add_parser("info", description=DESCRIPTION, usage="core info", help=DESCRIPTION)
+    config_parser = subparsers.add_parser(
+        "info", description=DESCRIPTION, usage="core info", help=DESCRIPTION
+    )
     config_parser.set_group_title(0, "Configure actions")
     config_parser.set_group_title(1, "Available options")
 
