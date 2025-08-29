@@ -22,15 +22,15 @@ def generate_parameters(data: dict):
     """
     Generate the parameters for the stack
     """
-    stack_parameters = data.get("stack_parameters", None)
+    parameters = data.get("parameters", None)
 
-    if stack_parameters is None:
+    if parameters is None:
         raise Exception("Template Paramters must be specified")
 
     if not isinstance(data, dict):
         raise ValueError("Stack Paraeters must be a dictionary")
 
-    return aws.transform_stack_parameter_hash(stack_parameters)
+    return aws.transform_stack_parameter_hash(parameters)
 
 
 # function will delete the changeset if it exists
@@ -388,7 +388,7 @@ def start_deploy_stack(**kwargs):
 
 
 def start_action(action_definition: ActionSpec):
-    parms = action_definition.Params
+    parms = action_definition.spec
     data = {
         P_REGION: parms.Region,
         P_TEMPLATE: parms.TemplateUrl,

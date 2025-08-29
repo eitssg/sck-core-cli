@@ -3,7 +3,7 @@ import importlib
 
 import core_framework as util
 from core_framework import generate_task_payload
-from core_framework.models import ActionSpec
+from core_framework.models import ActionDetails, ActionSpec
 
 from core_execute.actionlib.factory import ActionFactory
 
@@ -146,13 +146,13 @@ def action_template(**kwargs):
         if get_template_for_paramters is None:
             raise Exception("No generate_template function in module")
 
-        template = get_template_for_paramters()
+        template: ActionSpec = get_template_for_paramters()
 
         # Temporary hardcoding of parameters for my own testing
-        template.Label = f"action-{action_name.lower().replace("::", "-")}-label"
-        template.Params.Account = "154798051514"
-        template.Params.Region = "ap-southeast-1"
-        template.Scope = "build"
+        template.name = f"action-{action_name.lower().replace("::", "-")}-label"
+        template.spec.account = "154798051514"
+        template.spec.region = "ap-southeast-1"
+        template.scope = "build"
 
         actions_list = [template.model_dump()]
 

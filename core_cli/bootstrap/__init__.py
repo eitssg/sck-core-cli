@@ -125,7 +125,7 @@ def deploy_roles(data, next) -> str:
 
     tags = get_tags(data, "roles")
 
-    data["stack_parameters"] = {
+    data["parameters"] = {
         "ClientsTableName": clients_table_name,
         "ZonesTableName": zones_table_name,
         "PortfoliosTableName": portfolios_table_name,
