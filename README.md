@@ -31,6 +31,7 @@ An enhanced python logging facility that provides a bit (little bit) easier inte
 **Core Renderer**
 Jinja2 Rendering enhancements. Custom filters and round-trip rendering 
 
+> Copilot: See [local instructions](.github/copilot-instructions.md) and [root guidance](../../.github/copilot-instructions.md) for precedence and module rules.
 ### Layer 2 - Core DB
 The database integration system.  PynamoDB on DynamoDB at the moment. I'm considering taking the API and maybe use another Doc store.  This is where all the CMDB is managed.  Storing events (such as deployments) and items (Components) created and deployed for the Application.
 
