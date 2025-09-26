@@ -7,6 +7,16 @@
 - Auth/session: Respect UI auth conventions if simulating UI flows.
 - On conflicts, prefer local and raise a contradiction notice.
 
+## RST Documentation Requirements
+**MANDATORY**: All docstrings must be RST-compatible for Sphinx documentation generation:
+- Use proper RST syntax: `::` for code blocks (not markdown triple backticks)
+- Code blocks must be indented 4+ spaces relative to preceding text
+- Add blank line after `::` before code content
+- Bullet lists must end with blank line before continuing text
+- Use RST field lists for parameters: `:param name: description`
+- Use RST directives: `.. note::`, `.. warning::`, etc.
+- Test docstrings with Sphinx build - code is source of truth, not docstrings
+
 ## Contradiction Detection
 - Compare prompts against backend conventions in `../sck-core-ui/docs/backend-code-style.md` and root precedence in `../../.github/copilot-instructions.md`.
 - If CLI UX mirrors UI flows, also check `../sck-core-ui/docs/auth-session-and-storage.md`.
