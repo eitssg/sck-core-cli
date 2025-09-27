@@ -42,7 +42,9 @@ def delete_change_set_if_exists(stack_name, region):
 
     # Check if the change set exists
     try:
-        response = cloudformation.describe_change_set(ChangeSetName=f"{stack_name}-change-set", StackName=stack_name)
+        response = cloudformation.describe_change_set(
+            ChangeSetName=f"{stack_name}-change-set", StackName=stack_name
+        )
         if response["Status"] == "CREATE_COMPLETE":
             cprint("Change set exists and is complete.")
         elif response["Status"] == "FAILED":
@@ -53,7 +55,9 @@ def delete_change_set_if_exists(stack_name, region):
 
     # If the change set exists, delete it
     cprint(f"Deleting change set {stack_name}-change-set...")
-    cloudformation.delete_change_set(ChangeSetName=f"{stack_name}-change-set", StackName=stack_name)
+    cloudformation.delete_change_set(
+        ChangeSetName=f"{stack_name}-change-set", StackName=stack_name
+    )
 
     try:
         # Wait for the change set to be deleted
@@ -93,7 +97,10 @@ def create_stack_change_set(data: dict, region: str):
     )
 
     # if the response error is FAILED then query the reason and print on the console
-    if "ResponseMetadata" in response and response["ResponseMetadata"]["HTTPStatusCode"] != 200:
+    if (
+        "ResponseMetadata" in response
+        and response["ResponseMetadata"]["HTTPStatusCode"] != 200
+    ):
         if response["ResponseMetadata"]["HTTPStatusCode"] == 400:
             reason = response["ResponseMetadata"]["HTTPHeaders"]["x-amzn-errortype"]
             cprint(f"Error creating change set: {reason}")
@@ -108,7 +115,9 @@ def create_stack_change_set(data: dict, region: str):
         pass
 
     # query the change set and get its status.  If failed, print the failure reason
-    response = cloudformation.describe_change_set(ChangeSetName=f"{stack_name}-change-set", StackName=stack_name)
+    response = cloudformation.describe_change_set(
+        ChangeSetName=f"{stack_name}-change-set", StackName=stack_name
+    )
     if response["Status"] == "FAILED":
         reason = response["StatusReason"]
         cprint(f"Cannot create change set: {reason}")
@@ -126,7 +135,9 @@ def display_stack_change_set(stack_name: str, region: str):
     cloudformation = aws.cfn_client(region=region)
 
     # Get the change set
-    response = cloudformation.describe_change_set(ChangeSetName=f"{stack_name}-change-set", StackName=stack_name)
+    response = cloudformation.describe_change_set(
+        ChangeSetName=f"{stack_name}-change-set", StackName=stack_name
+    )
     changes = response["Changes"]
 
     cprint("The following changes will be made:")
@@ -199,9 +210,14 @@ def deploy_stack_change(stack_name: str, region: str):
     cloudformation = aws.cfn_client(region=region)
 
     # Execute the change set.  Ensure capabilities are et to allow IAM changes
-    response = cloudformation.execute_change_set(ChangeSetName=f"{stack_name}-change-set", StackName=stack_name)
+    response = cloudformation.execute_change_set(
+        ChangeSetName=f"{stack_name}-change-set", StackName=stack_name
+    )
     # if the response has an error, rais an exception
-    if "ResponseMetadata" in response and response["ResponseMetadata"]["HTTPStatusCode"] != 200:
+    if (
+        "ResponseMetadata" in response
+        and response["ResponseMetadata"]["HTTPStatusCode"] != 200
+    ):
         raise Exception(f"Error executing change set: {response}")
 
     try:
@@ -251,7 +267,9 @@ def delete_stack_if_in_bad_status(stack_name: str, region: str):
         "UPDATE_IN_PROGRESS",
         "DELETE_IN_PROGRESS",
     ]:
-        raise Exception(f"Stack {stack_name} is in status {stack_status}.  Cannot deploy stack while in progress.")
+        raise Exception(
+            f"Stack {stack_name} is in status {stack_status}.  Cannot deploy stack while in progress."
+        )
 
 
 # function will deploy the cloudformation stack using the yaml template 'cfn-core-api-app.yaml'
@@ -309,7 +327,10 @@ def verify_stack_template(stack_name: str, template: str, region: str):
 
     response = cloudformation.validate_template(TemplateBody=open(template).read())
     # if the response has an error, rais an exception
-    if "ResponseMetadata" in response and response["ResponseMetadata"]["HTTPStatusCode"] != 200:
+    if (
+        "ResponseMetadata" in response
+        and response["ResponseMetadata"]["HTTPStatusCode"] != 200
+    ):
         raise Exception(f"Error validating template: {response}")
 
     cprint("The stack is good to go!")
