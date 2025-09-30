@@ -35,9 +35,7 @@ class LambdaExecutionContext(dict):
 
         self["function_name"] = f"{log_stream_name}-function"
         self["function_version"] = "$LATEST"
-        self["invoked_function_arn"] = (
-            f"arn:aws:lambda:us-east-1:123456789012:function:{log_stream_name}-function"
-        )
+        self["invoked_function_arn"] = f"arn:aws:lambda:us-east-1:123456789012:function:{log_stream_name}-function"
         self["memory_limit_in_mb"] = 128
         self["aws_request_id"] = str(uuid.uuid4())
         self["log_group_name"] = f"/aws/lambda/{log_stream_name}"
@@ -52,9 +50,7 @@ class LambdaExecutionContext(dict):
         """Return the remaining time in milliseconds"""
 
         elapsed = datetime.now(timezone.utc) - self.start_time
-        remaining_time_in_seconds = (
-            self.max_lambda_time_seconds - elapsed.total_seconds()
-        )
+        remaining_time_in_seconds = self.max_lambda_time_seconds - elapsed.total_seconds()
         return int(remaining_time_in_seconds * 1000)
 
     def timeout_imminent(self) -> bool:
@@ -114,7 +110,7 @@ def state_execute(task_playload: TaskPayload) -> TaskPayload:
 
     event = task_playload.model_dump()
     event = core_execute_handler(event, LambdaExecutionContext())
-    task_playload = TaskPayload(**event)
+    task_playload = TaskPayload.model_validate(event)
 
     log.info("State Execute complete with response: {}", task_playload.FlowControl)
 
@@ -233,7 +229,7 @@ def generate_task_and_start(args) -> None:
         name = args.name
 
         data = json.loads(json_data)
-        task_payload = TaskPayload(**data)
+        task_payload = TaskPayload.model_validate(data)
 
         log.debug("Starting execution with name: {} and data: {}", name, data)
 
@@ -361,7 +357,7 @@ class MagicStepFnClient:
             )
 
             # Validate the and translate to JSON
-            task_payload = TaskPayload(**self.data)
+            task_payload = TaskPayload.model_validate(self.data)
 
             log.set_identity(task_payload.Identity)
 
