@@ -172,11 +172,7 @@ def action_template(**kwargs):
 
     except Exception as e:
         cprint(e)
-        cprint(
-            "Cannot load action: {}.  Use 'core-execute action list' to get a lisst of actions".format(
-                action_name
-            )
-        )
+        cprint("Cannot load action: {}.  Use 'core-execute action list' to get a lisst of actions".format(action_name))
         return {
             "tempalate": {
                 "action": action_name,
@@ -216,9 +212,7 @@ def action_list(**kwargs):
             if file.endswith(".py") and file not in ["__init__.py", "_TEMPLATE.py"]:
                 # Construct the module path
                 relative_path = os.path.relpath(os.path.join(root, file), module_path)
-                module_name = os.path.splitext(relative_path.replace(os.path.sep, "."))[
-                    0
-                ]
+                module_name = os.path.splitext(relative_path.replace(os.path.sep, "."))[0]
                 full_module_name = f"{module_base}.{module_name}"
 
                 action_name, class_name = get_module_name_parts(module_name)

@@ -21,29 +21,19 @@ def _get_args():
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
     parser.add_argument("-s", "--scope", help="Scope name", required=False)
-    parser.add_argument(
-        "-c", "--client", help="Client name for selecting config", required=True
-    )
+    parser.add_argument("-c", "--client", help="Client name for selecting config", required=True)
     parser.add_argument("-p", "--portfolio", help="Portfolio name", required=True)
     parser.add_argument("-a", "--app", help="Application name", required=True)
     parser.add_argument("-b", "--branch", help="Branch name", required=True)
-    parser.add_argument(
-        "-n", "--build", help="Build number", required=True
-    )  # Defaults to 1?
-    parser.add_argument(
-        "--mode", default=None, help="Mode of operation (default|local)"
-    )
-    parser.add_argument(
-        "--app-path", default=None, help="Local app path (local mode only)"
-    )
+    parser.add_argument("-n", "--build", help="Build number", required=True)  # Defaults to 1?
+    parser.add_argument("--mode", default=None, help="Mode of operation (default|local)")
+    parser.add_argument("--app-path", default=None, help="Local app path (local mode only)")
     parser.add_argument(
         "--aws-profile",
         help="Select which profile to use from your ~/.aws/credentials file.",
     )
     parser.add_argument("--client-vars", help="Client vars")
-    parser.add_argument(
-        "--bucket-region", default="ap-southeast-1", help="S3 Bucket Region"
-    )
+    parser.add_argument("--bucket-region", default="ap-southeast-1", help="S3 Bucket Region")
     parser.add_argument("--bucket-name", default=None, help="S3 Bucket Name")
     parser.add_argument("--s3-facts-prefix", default=None, help="S3 facts prefix")
 
@@ -51,9 +41,7 @@ def _get_args():
 
     scope_prefix = "{}-".format(args.scope) if args.scope is not None else ""
     if args.bucket_name is None:
-        args.bucket_name = "{}{}-core-automation-{}".format(
-            scope_prefix, args.client, args.bucket_region
-        )
+        args.bucket_name = "{}{}-core-automation-{}".format(scope_prefix, args.client, args.bucket_region)
 
     return args
 
@@ -66,9 +54,7 @@ def run(args):
     if args.client_vars is not None:
         client_vars_file = args.client_vars
 
-    client_vars = util.load_yaml_file(
-        client_vars_file
-    )  # Load the YAML file to ensure it exists
+    client_vars = util.load_yaml_file(client_vars_file)  # Load the YAML file to ensure it exists
 
     for key in client_vars:
         os.environ[key] = "{}".format(client_vars[key])
@@ -104,17 +90,13 @@ def run(args):
     if args.mode == "local" and args.data_path is None:
         raise ValueError("Must have data_path is mode=local.")
 
-    branch_short_name = re.sub(r"[^a-z0-9\\-]", "-", args.branch.lower())[0:20].rstrip(
-        "-"
-    )
+    branch_short_name = re.sub(r"[^a-z0-9\\-]", "-", args.branch.lower())[0:20].rstrip("-")
 
     event = {
         "Package": {
             "BucketName": args.bucket_name,
             "BucketRegion": args.bucket_region,
-            "Key": "packages/{}/{}/{}/{}/package.zip".format(
-                args.portfolio, args.app, args.branch, args.build
-            ),
+            "Key": "packages/{}/{}/{}/{}/package.zip".format(args.portfolio, args.app, args.branch, args.build),
             "VersionId": None,
             "Mode": args.mode,
             "DataPath": args.data_path,

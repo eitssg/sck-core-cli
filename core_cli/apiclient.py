@@ -181,9 +181,7 @@ class APIClient:
         if data:
             credentials = data.get(P_IDENTITY, {})
             headers[HDR_AUTHORIZATION] = f"Bearer {credentials.get('SessionToken')}"
-            headers[HDR_X_CORRELATION_ID] = data.get(
-                P_CORRELATION_ID, util.get_correlation_id()
-            )
+            headers[HDR_X_CORRELATION_ID] = data.get(P_CORRELATION_ID, util.get_correlation_id())
         else:
             headers[HDR_X_CORRELATION_ID] = util.get_correlation_id()
 

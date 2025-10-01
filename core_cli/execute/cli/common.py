@@ -63,9 +63,7 @@ def get_module_name_parts(relative_module_name: str):
     """Helper function to get module name parts and class name."""
     module_name_parts = relative_module_name.split(".")
     prefix = "::".join([word.upper() for word in module_name_parts[:-1]])
-    action_name = "".join(
-        [word.capitalize() for word in module_name_parts[-1].split("_")]
-    )
+    action_name = "".join([word.capitalize() for word in module_name_parts[-1].split("_")])
     class_name = action_name + "Action"
     path_action_name = prefix + "::" + action_name
     return path_action_name, class_name

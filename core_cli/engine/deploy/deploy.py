@@ -121,9 +121,7 @@ def add_deploy_parser(subparsers) -> ExecuteCommandsType:
         required=False,
         default="master",
     )
-    parser.add_argument(
-        "--aws-profile", help="AWS profile name", required=False, default=aws_profile
-    )
+    parser.add_argument("--aws-profile", help="AWS profile name", required=False, default=aws_profile)
 
     # get a list of units except for all and default
     keys = [key for key in UNITS if key not in ["all", "default"]]

@@ -38,8 +38,7 @@ def add_zones_parser(subparsers) -> ExecuteCommandsType:
     zones_parser.add_argument(
         "-b",
         "--branch",
-        help="Branch name to use for the configuration file\n"
-        "Examples:  dev, nonprod, or prod. Defaults to 'None'",
+        help="Branch name to use for the configuration file\n" "Examples:  dev, nonprod, or prod. Defaults to 'None'",
     )
 
     return {"zones": (description, execute_zones)}

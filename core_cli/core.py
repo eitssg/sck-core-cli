@@ -89,9 +89,7 @@ def parse_args(args: list[str], common_parser=None) -> dict:
         required=False,
     )
 
-    command_parser = core_parser.add_custom_subparsers(
-        dest="command", metavar="<module>"
-    )
+    command_parser = core_parser.add_custom_subparsers(dest="command", metavar="<module>")
 
     # COMMANDS.update(get_configure_command(command_parser))
     COMMANDS.update(get_run_command(command_parser))
@@ -125,9 +123,7 @@ def add_current_user_to_data(data):
         # data[P_USERNAME] = aws.get_username()
 
     except ProfileNotFound as e:
-        raise ValueError(
-            f'(AWS_PROFILE) {e}.  Run the CLI "aws configure" and "aws sso configure"'
-        ) from e
+        raise ValueError(f'(AWS_PROFILE) {e}.  Run the CLI "aws configure" and "aws sso configure"') from e
 
     except ClientError as e:
         raise ValueError(f"Error getting account information: {e}") from e

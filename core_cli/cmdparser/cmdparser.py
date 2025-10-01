@@ -43,18 +43,12 @@ class CoreHelpTextFormatter(argparse.RawTextHelpFormatter):
 
     def add_arguments(self, actions):
         # Custom logic to make the command name column wider
-        actions = sorted(
-            actions, key=lambda x: x.dest
-        )  # Sort actions to ensure consistent ordering
+        actions = sorted(actions, key=lambda x: x.dest)  # Sort actions to ensure consistent ordering
         if len(actions) == 0:
             max_help_position = 30
         else:
-            max_help_position = max(
-                len(self._format_action_invocation(action)) for action in actions
-            )
-        self._action_max_length = max(
-            max_help_position, 30
-        )  # Set a minimum width of 24 characters
+            max_help_position = max(len(self._format_action_invocation(action)) for action in actions)
+        self._action_max_length = max(max_help_position, 30)  # Set a minimum width of 24 characters
         super().add_arguments(actions)
 
     def _format_action_invocation(self, action):
@@ -75,15 +69,10 @@ class CoreHelpTextFormatter(argparse.RawTextHelpFormatter):
             keys = list(action.choices)
             # Use a list comprehension to build the formatted choices string
             formatted_choices = "\n".join(
-                f"  {key:29} {self._get_description(self.choices.get(key, ('unknown', None)))}"
-                for key in keys
+                f"  {key:29} {self._get_description(self.choices.get(key, ('unknown', None)))}" for key in keys
             )
             # Combine the action help and formatted choices
-            return (
-                f"{action.help}\n{formatted_choices}"
-                if action.help
-                else formatted_choices
-            )
+            return f"{action.help}\n{formatted_choices}" if action.help else formatted_choices
         return super()._format_action(action)
 
     def _get_description(self, choice):

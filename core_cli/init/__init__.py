@@ -85,9 +85,7 @@ def execute_init(**kwargs):
 
     if is_cdk_app():
         cprint("I see that you are initializing core automation in a CDK app")
-        cprint(
-            "This will create a core platform folder in the app folder and update your cdk.json file\n"
-        )
+        cprint("This will create a core platform folder in the app folder and update your cdk.json file\n")
 
         result = get_input("Do you want to continue?", ["Y", "n"], "y")
         if result == "n":

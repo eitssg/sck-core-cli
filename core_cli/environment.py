@@ -15,14 +15,10 @@ dotenv.load_dotenv(override=True)
 
 # Initialize the translation function
 def setup_i18n(locale: str = "en"):
-    locales_dir = os.path.join(
-        os.path.abspath(os.path.dirname(__file__)), "..", "locale"
-    )
+    locales_dir = os.path.join(os.path.abspath(os.path.dirname(__file__)), "..", "locale")
     gettext.bindtextdomain("messages", locales_dir)
     gettext.textdomain("messages")
-    translation = gettext.translation(
-        "messages", locales_dir, languages=[locale], fallback=True
-    )
+    translation = gettext.translation("messages", locales_dir, languages=[locale], fallback=True)
     translation.install()
     return translation.gettext
 
@@ -283,9 +279,7 @@ def get_environment(include_none: bool = False) -> dict[str, str]:
     return dict(sorted(env_vars.items()))
 
 
-def set_environment_from_args(
-    args: dict[str, str | None], *, ignore_none: bool = False, remove_none: bool = False
-) -> None:
+def set_environment_from_args(args: dict[str, str | None], *, ignore_none: bool = False, remove_none: bool = False) -> None:
     """
     Set environment variables from specified P_ paramters from the command line.
     If you are calling after argparse, I highly recommend "ignore_none=True" as argparse sets ALL P_ paramtesr it
@@ -308,9 +302,7 @@ def set_environment_from_args(
                 os.environ[env_key] = v if v else V_EMPTY
 
 
-def get_arguments_from_env(
-    env: dict | None = None, include_none: bool = False
-) -> dict[str, str | None]:
+def get_arguments_from_env(env: dict | None = None, include_none: bool = False) -> dict[str, str | None]:
     """
     Get the command line arguments from the environment variables.
 

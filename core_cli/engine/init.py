@@ -34,9 +34,7 @@ def create_trust_policy(iam, role_name, resources_dir):
     try:
         trust_template = env.get_template(trust_template_name)
     except TemplateNotFound as e:
-        raise FileNotFoundError(
-            f"Template '{trust_template_name}' not found in '{resources_dir}'"
-        ) from e
+        raise FileNotFoundError(f"Template '{trust_template_name}' not found in '{resources_dir}'") from e
 
     trust_policy_document = trust_template.render(service="ec2.amazonaws.com")
 
@@ -45,9 +43,7 @@ def create_trust_policy(iam, role_name, resources_dir):
         iam.get_role(RoleName=role_name)
         print(f"Role '{role_name}' already exists. Updating trust policy.")
         # Update the trust policy
-        iam.update_assume_role_policy(
-            RoleName=role_name, PolicyDocument=trust_policy_document
-        )
+        iam.update_assume_role_policy(RoleName=role_name, PolicyDocument=trust_policy_document)
     except ClientError as e:
         if e.response["Error"]["Code"] == "NoSuchEntity":
             # Role does not exist, so create it
@@ -59,14 +55,10 @@ def create_trust_policy(iam, role_name, resources_dir):
                 )
                 print(f"Role '{role_name}' created.")
             except ClientError as e1:
-                raise OSError(
-                    f"An AWS error occurred while creating the role: {e1.response['Error']['Message']}"
-                ) from e1
+                raise OSError(f"An AWS error occurred while creating the role: {e1.response['Error']['Message']}") from e1
         else:
             # Raise any other ClientError
-            raise OSError(
-                f"An AWS error occurred: {e.response['Error']['Message']}"
-            ) from e
+            raise OSError(f"An AWS error occurred: {e.response['Error']['Message']}") from e
 
 
 def create_access_policy(iam, session, role_name, resources_dir):
@@ -79,9 +71,7 @@ def create_access_policy(iam, session, role_name, resources_dir):
     try:
         access_template = env.get_template(access_template_name)
     except TemplateNotFound as e:
-        raise FileNotFoundError(
-            f"Template '{access_template_name}' not found in '{resources_dir}'"
-        ) from e
+        raise FileNotFoundError(f"Template '{access_template_name}' not found in '{resources_dir}'") from e
 
     access_policy_document = access_template.render()
 
@@ -109,27 +99,19 @@ def create_access_policy(iam, session, role_name, resources_dir):
                 policy_arn = policy["Policy"]["Arn"]
                 print(f"Policy '{policy_name}' created.")
             else:
-                raise OSError(
-                    f"An AWS error occurred: {e.response['Error']['Message']}"
-                ) from e
+                raise OSError(f"An AWS error occurred: {e.response['Error']['Message']}") from e
 
         # Check if the policy is already attached to the role
-        attached_policies = iam.list_attached_role_policies(RoleName=role_name)[
-            "AttachedPolicies"
-        ]
+        attached_policies = iam.list_attached_role_policies(RoleName=role_name)["AttachedPolicies"]
         if any(p["PolicyArn"] == policy_arn for p in attached_policies):
             print(f"Policy '{policy_name}' is already attached to role '{role_name}'.")
         else:
             # Attach the policy to the role
             iam.attach_role_policy(RoleName=role_name, PolicyArn=policy_arn)
-            print(
-                f"Policy '{policy_name}' attached to role '{role_name}' successfully."
-            )
+            print(f"Policy '{policy_name}' attached to role '{role_name}' successfully.")
 
     except ClientError as e1:
-        raise OSError(
-            f"An AWS error occurred while attaching the policy to the role: {e1.response['Error']['Message']}"
-        ) from e1
+        raise OSError(f"An AWS error occurred while attaching the policy to the role: {e1.response['Error']['Message']}") from e1
 
 
 def create_roles(**kwargs):
@@ -138,13 +120,9 @@ def create_roles(**kwargs):
     role_name = kwargs.get("automation_role")
 
     if not profile_name or not role_name:
-        raise ValueError(
-            "Both 'profile_name' and 'role_name' must be provided.  Did you run 'core configure' first?"
-        )
+        raise ValueError("Both 'profile_name' and 'role_name' must be provided.  Did you run 'core configure' first?")
 
-    print(
-        f"Checking core-autmation roles for profile '{profile_name}' and role '{role_name}'"
-    )
+    print(f"Checking core-autmation roles for profile '{profile_name}' and role '{role_name}'")
 
     try:
         # Create a boto3 session using the specified profile
@@ -154,9 +132,7 @@ def create_roles(**kwargs):
         iam = session.client("iam")
 
         # Set the path to the templates
-        resources_dir = os.path.join(
-            os.path.dirname(os.path.dirname(__file__)), "resources", "roles", role_name
-        )
+        resources_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), "resources", "roles", role_name)
 
         # Check if the resources directory exists
         if not os.path.exists(resources_dir):
@@ -181,9 +157,7 @@ def create_roles(**kwargs):
 def detach_policy(iam, role_name):
     """detatch all policies from the role so they can be deleted"""
     # Detach all policies attached to the role
-    attached_policies = iam.list_attached_role_policies(RoleName=role_name)[
-        "AttachedPolicies"
-    ]
+    attached_policies = iam.list_attached_role_policies(RoleName=role_name)["AttachedPolicies"]
     for policy in attached_policies:
         iam.detach_role_policy(RoleName=role_name, PolicyArn=policy["PolicyArn"])
         print(f"Detached policy '{policy['PolicyArn']}' from role '{role_name}'.")
@@ -200,16 +174,12 @@ def delete_policy(iam, session, role_name):
         policy_versions = iam.list_policy_versions(PolicyArn=policy_arn)["Versions"]
         for version in policy_versions:
             if not version["IsDefaultVersion"]:
-                iam.delete_policy_version(
-                    PolicyArn=policy_arn, VersionId=version["VersionId"]
-                )
+                iam.delete_policy_version(PolicyArn=policy_arn, VersionId=version["VersionId"])
         iam.delete_policy(PolicyArn=policy_arn)
         print(f"Deleted policy '{policy_arn}'.")
     except ClientError as e:
         if e.response["Error"]["Code"] != "NoSuchEntity":
-            raise OSError(
-                f"An AWS error occurred while deleting the policy: {e.response['Error']['Message']}"
-            ) from e
+            raise OSError(f"An AWS error occurred while deleting the policy: {e.response['Error']['Message']}") from e
 
 
 def delete_roles(**kwargs):
@@ -235,9 +205,7 @@ def delete_roles(**kwargs):
                 print(f"Role '{role_name}' does not exist.")
                 return
             else:
-                raise OSError(
-                    f"An AWS error occurred: {e.response['Error']['Message']}"
-                ) from e
+                raise OSError(f"An AWS error occurred: {e.response['Error']['Message']}") from e
 
         detach_policy(iam, role_name)
 
@@ -312,9 +280,7 @@ def unit_resources(**kwargs):
         print("Aborted")
         return
 
-    print(
-        "\nCongratulations! We have checked and you are an admin!\nYou may continue with the initialization.\n"
-    )
+    print("\nCongratulations! We have checked and you are an admin!\nYou may continue with the initialization.\n")
 
     result = get_input("Is this what you want?", ["yes", "No"], "No")
     if result.lower() != "yes":

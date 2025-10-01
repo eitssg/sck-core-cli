@@ -39,9 +39,7 @@ def add_clean_parser(subparsers) -> ExecuteCommandsType:
     portfolio = os.environ.get("PORTFOLIO", None)
     app = os.environ.get("APP", None)
     branch = os.environ.get("BRANCH", None)
-    bucket_region = os.environ.get(
-        "BUCKET_REGION", os.environ.get("AWS_REGION", "ap-southeast-1")
-    )
+    bucket_region = os.environ.get("BUCKET_REGION", os.environ.get("AWS_REGION", "ap-southeast-1"))
     bucket_name = os.environ.get("BUCKET_NAME", None)
 
     subparser.add_argument(
@@ -51,21 +49,15 @@ def add_clean_parser(subparsers) -> ExecuteCommandsType:
         help="Portfolio name",
         required={not portfolio},
     )
-    subparser.add_argument(
-        "-a", "--app", default=app, help="Application name", required={not app}
-    )
-    subparser.add_argument(
-        "-b", "--branch", default=branch, help="Branch name", required={not branch}
-    )
+    subparser.add_argument("-a", "--app", default=app, help="Application name", required={not app})
+    subparser.add_argument("-b", "--branch", default=branch, help="Branch name", required={not branch})
     subparser.add_argument(
         "--bucket-region",
         default=bucket_region,
         help="S3 Bucket Region",
         required=False,
     )
-    subparser.add_argument(
-        "--bucket-name", default=bucket_name, help="S3 Bucket Name", required=False
-    )
+    subparser.add_argument("--bucket-name", default=bucket_name, help="S3 Bucket Name", required=False)
 
     return {"clean": (description, execute_clean)}
 
@@ -73,9 +65,7 @@ def add_clean_parser(subparsers) -> ExecuteCommandsType:
 def make_defaults(**kwargs):
     """make the defaults"""
     client = kwargs.get("client", None)
-    bucket_region = kwargs.get(
-        "bucket_region", os.environ.get("AWS_REGION", "ap-southeast-1")
-    )
+    bucket_region = kwargs.get("bucket_region", os.environ.get("AWS_REGION", "ap-southeast-1"))
     if kwargs.get("bucket_name", None) is None:
         kwargs["bucket_name"] = f"{client}-core-automation-{bucket_region}"
     return kwargs
@@ -128,9 +118,7 @@ def execute_clean(**kwargs):
             aws_session_token=session_token,
         )
         s3 = session.client("s3")
-        response = s3.delete_objects(
-            Bucket=bucket_name, Delete={"Objects": delete_keys, "Quiet": False}
-        )
+        response = s3.delete_objects(Bucket=bucket_name, Delete={"Objects": delete_keys, "Quiet": False})
     except ClientError as e:
         raise OSError(f"{e}") from e
 

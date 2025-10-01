@@ -4,9 +4,7 @@ from ..cmdparser import ExecuteCommandsType
 def add_teardown_parser(subparsers) -> ExecuteCommandsType:
     """add the source parser"""
 
-    description = (
-        "Remove Core Automation CloudFormation Stacks, Databases, and S3 Buckets"
-    )
+    description = "Remove Core Automation CloudFormation Stacks, Databases, and S3 Buckets"
 
     subparser = subparsers.add_parser(
         "teardown",

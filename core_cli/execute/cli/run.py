@@ -66,9 +66,7 @@ def add_run_subparser(subparsers):
 
     """
 
-    parser = subparsers.add_parser(
-        "run", help="Run the {task}.  One of [deploy, release, teardown]"
-    )
+    parser = subparsers.add_parser("run", help="Run the {task}.  One of [deploy, release, teardown]")
     parser.set_defaults(command="run")
 
     parser.add_argument(

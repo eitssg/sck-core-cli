@@ -87,33 +87,21 @@ def add_client(**kwargs):
         P_CLIENT_REGION: kwargs.get(P_CLIENT_REGION) or util.get_client_region(),
         P_MASTER_REGION: kwargs.get(P_MASTER_REGION) or util.get_region(),
         P_ORGANIZATION_ID: kwargs.get(P_ORGANIZATION_ID) or util.get_organization_id(),
-        P_ORGANIZATION_NAME: kwargs.get(P_ORGANIZATION_NAME)
-        or util.get_organization_name(),
+        P_ORGANIZATION_NAME: kwargs.get(P_ORGANIZATION_NAME) or util.get_organization_name(),
         P_ORGANIZATION_ACCOUNT: kwargs.get(P_ORGANIZATION_ACCOUNT)
         or util.get_organization_account()
         or util.get_automation_account(),
-        P_ORGANIZATION_EMAIL: kwargs.get(P_ORGANIZATION_EMAIL)
-        or util.get_organization_email(),
-        P_AUTOMATION_ACCOUNT: kwargs.get(P_AUTOMATION_ACCOUNT)
-        or util.get_automation_account(),
-        P_SECURITY_ACCOUNT: kwargs.get(P_SECURITY_ACCOUNT)
-        or util.get_security_account()
-        or util.get_automation_account(),
-        P_AUDIT_ACCOUNT: kwargs.get(P_AUDIT_ACCOUNT)
-        or util.get_audit_account()
-        or util.get_automation_account(),
-        P_NETWORK_ACCOUNT: kwargs.get(P_NETWORK_ACCOUNT)
-        or util.get_network_account()
-        or util.get_automation_account(),
+        P_ORGANIZATION_EMAIL: kwargs.get(P_ORGANIZATION_EMAIL) or util.get_organization_email(),
+        P_AUTOMATION_ACCOUNT: kwargs.get(P_AUTOMATION_ACCOUNT) or util.get_automation_account(),
+        P_SECURITY_ACCOUNT: kwargs.get(P_SECURITY_ACCOUNT) or util.get_security_account() or util.get_automation_account(),
+        P_AUDIT_ACCOUNT: kwargs.get(P_AUDIT_ACCOUNT) or util.get_audit_account() or util.get_automation_account(),
+        P_NETWORK_ACCOUNT: kwargs.get(P_NETWORK_ACCOUNT) or util.get_network_account() or util.get_automation_account(),
         P_DOMAIN: kwargs.get(P_DOMAIN) or (util.get_domain()),
         P_BUCKET_REGION: kwargs.get(P_BUCKET_REGION) or util.get_bucket_region(),
         P_BUCKET_NAME: kwargs.get(P_BUCKET_NAME) or util.get_bucket_name(client),
-        P_ARTEFACT_BUCKET_NAME: kwargs.get(P_ARTEFACT_BUCKET_NAME)
-        or util.get_artefact_bucket_name(client),
-        P_DOCUMENT_BUCKET_NAME: kwargs.get(P_DOCUMENT_BUCKET_NAME)
-        or util.get_document_bucket_name(client),
-        P_UI_BUCKET_NAME: kwargs.get(P_UI_BUCKET_NAME)
-        or util.get_ui_bucket_name(client),
+        P_ARTEFACT_BUCKET_NAME: kwargs.get(P_ARTEFACT_BUCKET_NAME) or util.get_artefact_bucket_name(client),
+        P_DOCUMENT_BUCKET_NAME: kwargs.get(P_DOCUMENT_BUCKET_NAME) or util.get_document_bucket_name(client),
+        P_UI_BUCKET_NAME: kwargs.get(P_UI_BUCKET_NAME) or util.get_ui_bucket_name(client),
     }
 
     apiclient = APIClient.get_instance()
@@ -155,15 +143,11 @@ def update_client(**kwargs):
         P_UI_BUCKET_NAME,
     ]
 
-    data = {
-        key: kwargs[key] for key in keys if key in kwargs and kwargs[key] is not None
-    }
+    data = {key: kwargs[key] for key in keys if key in kwargs and kwargs[key] is not None}
 
     apiclient = APIClient.get_instance()
     headers = apiclient.get_headers(kwargs)
-    request = apiclient.patch(
-        f"/api/v1/registry/client/{client}", headers=headers, json=data
-    )
+    request = apiclient.patch(f"/api/v1/registry/client/{client}", headers=headers, json=data)
     rest_data = request.json()
     data = rest_data.get("data", {})
 

@@ -40,9 +40,7 @@ def jprint(msg: Any | None = None):
     console.print_json(msg)
 
 
-def get_input(
-    message: str, choices: list[str] | None = None, default: str | None = None
-) -> str | None:
+def get_input(message: str, choices: list[str] | None = None, default: str | None = None) -> str | None:
     """get input from the user.  Loop until they enter something"""
     while True:
         value = Prompt.ask(message, choices=choices, default=default)
@@ -119,9 +117,7 @@ def package_project(root_dir: str, task_payload: TaskPayload) -> str:
 
     # if the basedir of root_dir is not 'platform' then fail
     if not root_dir.endswith("platform"):
-        raise ValueError(
-            "Invalid root directory. You must specify a platform directory"
-        )
+        raise ValueError("Invalid root directory. You must specify a platform directory")
 
     # use the python zipfile module to create a zip file of the project and include only the subfoloders "vars", "components"
     # and output the zip to the file "package.zip" in the "temp" directory

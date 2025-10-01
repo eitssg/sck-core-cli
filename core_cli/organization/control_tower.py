@@ -95,9 +95,7 @@ Landing Zone provisioning:
         "shared services acocunts\n\n"
     )
 
-    cprint(
-        "Please expect that with Control Tower, your baseline operation cosst in AWS will be between $2500 and $10000/month\n\n"
-    )
+    cprint("Please expect that with Control Tower, your baseline operation cosst in AWS will be between $2500 and $10000/month\n\n")
 
 
 def get_control_tower_tasks(parser) -> ExecuteCommandsType:

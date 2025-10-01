@@ -102,12 +102,8 @@ def make_defaults(data: dict) -> dict:
     if invoker_branch == "master":
         data.setdefault(P_INVOKER_NAME, f"{scope_prefix}core-automation-master-invoker")
     else:
-        invoker_branch_short_name = re.sub(r"[^a-z0-9\-]", "-", invoker_branch.lower())[
-            :20
-        ].rstrip("-")
-        data[P_INVOKER_NAME] = (
-            f"{scope_prefix}core-automation-{invoker_branch_short_name}-invoker"
-        )
+        invoker_branch_short_name = re.sub(r"[^a-z0-9\-]", "-", invoker_branch.lower())[:20].rstrip("-")
+        data[P_INVOKER_NAME] = f"{scope_prefix}core-automation-{invoker_branch_short_name}-invoker"
 
     return data
 
@@ -250,8 +246,7 @@ def get_run_command(subparsers) -> ExecuteCommandsType:
     run_parser.add_argument(
         "--force",
         action="store_true",
-        help="Set to 'true' to force through an action if it "
-        "has protection checks on it -- see teardown.",
+        help="Set to 'true' to force through an action if it " "has protection checks on it -- see teardown.",
     )
 
     return {"run": (descriptions, execute_run)}

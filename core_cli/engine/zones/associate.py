@@ -11,9 +11,7 @@ def _assume_role(profile, account, role_name, region):
     """assume the role"""
     try:
         client = boto3.client("sts", profile=profile, region_name=region)
-        response = client.assume_role(
-            RoleArn=f"arn:aws:iam::{account}:role/{role_name}"
-        )
+        response = client.assume_role(RoleArn=f"arn:aws:iam::{account}:role/{role_name}")
         if response:
             return boto3.session.Session(
                 aws_access_key_id=response["Credentials"]["AccessKeyId"],
@@ -23,9 +21,7 @@ def _assume_role(profile, account, role_name, region):
             )
     except botocore.exceptions.ClientError as e:
         print(f"Failed to assume role: {e}")
-        print(
-            "If you have not create the appriate automation roles, please run the following command: \n\n"
-        )
+        print("If you have not create the appriate automation roles, please run the following command: \n\n")
         print("$ core engine init roles --client <client>\n")
         return None
 
@@ -52,9 +48,7 @@ def _process_services_vpc(**kwargs):
     hosted_zone_name = kwargs["hosted_zone"]["Name"]
 
     # Get all the hosted zones in the client account
-    hosted_zone = _get_r53_client(
-        profile, client_account, role, client_region
-    ).get_hosted_zone(Id=hosted_zone_id)
+    hosted_zone = _get_r53_client(profile, client_account, role, client_region).get_hosted_zone(Id=hosted_zone_id)
 
     role = kwargs.get("automation-role", "AutomationEngineAccess")
 
@@ -62,31 +56,22 @@ def _process_services_vpc(**kwargs):
     services_vpc_id = kwargs["services_vpc"]["vpc_id"]
     services_region = kwargs["services_vpc"]["region"]
 
-    print(
-        f"== Associating ({client_account}) => ({hosted_zone_name}|{services_vpc_id}|{services_region})"
-    )
+    print(f"== Associating ({client_account}) => ({hosted_zone_name}|{services_vpc_id}|{services_region})")
 
-    if any(
-        (vpc["VPCId"] == services_vpc_id and vpc["VPCRegion"] == services_region)
-        for vpc in hosted_zone.get("VPCs", [])
-    ):
+    if any((vpc["VPCId"] == services_vpc_id and vpc["VPCRegion"] == services_region) for vpc in hosted_zone.get("VPCs", [])):
         print("Hosted zone already associated with VPC, skipping")
         return
 
     try:
         if services_account != client_account:
             print("Creating association authorization")
-            _get_r53_client(
-                profile, services_account, role, services_region
-            ).create_vpc_association_authorization(
+            _get_r53_client(profile, services_account, role, services_region).create_vpc_association_authorization(
                 HostedZoneId=hosted_zone_id,
                 VPC={"VPCRegion": services_region, "VPCId": services_vpc_id},
             )
 
         print("Associating zone to VPC")
-        _get_r53_client(
-            profile, client_account, role, client_region
-        ).associate_vpc_with_hosted_zone(
+        _get_r53_client(profile, client_account, role, client_region).associate_vpc_with_hosted_zone(
             HostedZoneId=hosted_zone_id,
             VPC={"VPCRegion": services_region, "VPCId": services_vpc_id},
         )
@@ -109,9 +94,7 @@ def _process_zone(**kwargs):
     # Associate hosted zone with services VPCs
     services_vpcs = kwargs["client_vars"]["services_vpcs"]
     for services_vpc in services_vpcs:
-        _process_services_vpc(
-            **kwargs, services_vpc=services_vpc, hosted_zone=hosted_zone
-        )
+        _process_services_vpc(**kwargs, services_vpc=services_vpc, hosted_zone=hosted_zone)
 
 
 def _process_account(**kwargs):
@@ -123,9 +106,7 @@ def _process_account(**kwargs):
     account = kwargs["account"]
 
     try:
-        response = _get_r53_client(
-            profile_name, account, administator_role, region
-        ).list_hosted_zones()
+        response = _get_r53_client(profile_name, account, administator_role, region).list_hosted_zones()
     except botocore.exceptions.ClientError as e:
         # """ translate ClientError to ValueError """
         raise ValueError("Failed to list hosted zones") from e

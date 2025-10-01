@@ -61,11 +61,7 @@ def get_client_context(data: dict) -> dict:
         else:
             context = load_context_client(data)
         if CTX_CONTEXT not in context:
-            raise ValueError(
-                "Could not find the context key in the client configuration"
-            )
+            raise ValueError("Could not find the context key in the client configuration")
         return context[CTX_CONTEXT]
     except IOError as e:
-        raise ValueError(
-            "Could not load context file from the client configuration"
-        ) from e
+        raise ValueError("Could not load context file from the client configuration") from e

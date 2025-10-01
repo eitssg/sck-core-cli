@@ -144,9 +144,7 @@ def deploy_roles(data, next) -> str:
 
     cprint("\nComplete!\n", style="bold green")
 
-    result = get_input(
-        "Press Enter to continue or X to abort.", ["Enter", "x"], "Enter"
-    )
+    result = get_input("Press Enter to continue or X to abort.", ["Enter", "x"], "Enter")
     if result.lower() == "x":
         raise Exception("Aborted by user.")
 
@@ -207,9 +205,7 @@ def deploy_storage(data, next) -> str:
 
     cprint("\nComplete!\n", style="bold green")
 
-    result = get_input(
-        "Press Enter to continue or X to abort.", ["Enter", "x"], "Enter"
-    )
+    result = get_input("Press Enter to continue or X to abort.", ["Enter", "x"], "Enter")
     if result.lower() == "x":
         raise Exception("Aborted by user.")
 
@@ -220,9 +216,7 @@ def pre_storage(data, next) -> str:
 
     cprint("\nDEPLOY STORAGE\n", style="bold underline")
 
-    cprint(
-        "The next step will be installing the core automation storage.  Please read this note about storage.\n"
-    )
+    cprint("The next step will be installing the core automation storage.  Please read this note about storage.\n")
 
     cprint(
         "The core automation storage is one or two S3 buckets that are used to store the core automation packages and\n"
@@ -270,9 +264,7 @@ def pre_storage(data, next) -> str:
 
     cprint(table)
 
-    cprint(
-        "If you wish to change any of the above values, please set the appropriate environment variables and restart setup.\n"
-    )
+    cprint("If you wish to change any of the above values, please set the appropriate environment variables and restart setup.\n")
 
     result = get_input(
         "Press Enter to continue, S to skip, or X to abort.",
@@ -345,9 +337,7 @@ def register_portfolio(data):
     response = PortfolioActions.get(client=client, portfolio=portfolio)
     portfolio_facts = response.data if isinstance(response.data, dict) else {}
 
-    portfolio_facts.update(
-        {"Client": client, "Portfolio": portfolio, "Owner": data[P_USERNAME]}
-    )
+    portfolio_facts.update({"Client": client, "Portfolio": portfolio, "Owner": data[P_USERNAME]})
 
     PortfolioActions.update(**portfolio_facts)
 
@@ -444,13 +434,9 @@ def deploy_database(data, next) -> str:
     register_portfolio(data)
     register_app(data)
 
-    cprint(
-        "\n[bold]WOW!  Good Job![/bold] The Process is complete!\n", style="bold green"
-    )
+    cprint("\n[bold]WOW!  Good Job![/bold] The Process is complete!\n", style="bold green")
 
-    result = get_input(
-        "Press Enter to continue or X to abort.", ["Enter", "x"], "Enter"
-    )
+    result = get_input("Press Enter to continue or X to abort.", ["Enter", "x"], "Enter")
     if result.lower() == "x":
         raise Exception("Aborted by user.")
 
@@ -461,12 +447,8 @@ def pre_database(data, next) -> str:
 
     cprint("\nDEPLOY DATABASE\n", style="bold underline")
 
-    cprint(
-        "The next step will be installing the core automation database.  Please read this note about the database.\n"
-    )
-    cprint(
-        "There are 6 database tables that are deployed in the core automation DynamoDB database.\n"
-    )
+    cprint("The next step will be installing the core automation database.  Please read this note about the database.\n")
+    cprint("There are 6 database tables that are deployed in the core automation DynamoDB database.\n")
     cprint("The tables are:\n")
 
     table = Table(box=box.SIMPLE)
@@ -525,9 +507,7 @@ def pre_database(data, next) -> str:
 
     cprint(table)
 
-    result = get_input(
-        "Press Enter to continue or X to abort.", ["Enter", "x"], "Enter"
-    )
+    result = get_input("Press Enter to continue or X to abort.", ["Enter", "x"], "Enter")
     if result.lower() == "x":
         raise Exception("Aborted by user.")
 
@@ -540,9 +520,7 @@ def pre_roles(data, next) -> str:
 
     cprint("\nDEPLOY ROLES\n", style="bold underline")
 
-    cprint(
-        "The next step will be installing the core automation roles.  The roles are:"
-    )
+    cprint("The next step will be installing the core automation roles.  The roles are:")
 
     table = Table(box=box.SIMPLE)
     table.add_column("Role", style="cyan")
@@ -567,9 +545,7 @@ def pre_roles(data, next) -> str:
 
     cprint(table)
 
-    result = get_input(
-        "Press Enter to continue or X to abort.", ["Enter", "x"], "Enter"
-    )
+    result = get_input("Press Enter to continue or X to abort.", ["Enter", "x"], "Enter")
     if result.lower() == "x":
         raise Exception("Aborted by user.")
 
@@ -590,9 +566,7 @@ def check_configuration(data, next) -> str:
         style="bold yellow",
     )
 
-    result = get_input(
-        "Press Enter to continue or X to abort.", ["Enter", "x"], "Enter"
-    )
+    result = get_input("Press Enter to continue or X to abort.", ["Enter", "x"], "Enter")
     if result.lower() == "x":
         raise Exception("Aborted by user.")
 
@@ -601,9 +575,7 @@ def check_configuration(data, next) -> str:
 
 def check_organization(data, next) -> str:
     cprint("\nCHECK ORGANIZATION\n", style="bold underline")
-    cprint(
-        "This step checks to see if you have an organization setup in AWS Organizations."
-    )
+    cprint("This step checks to see if you have an organization setup in AWS Organizations.")
 
     try:
         org = get_organization_info()
@@ -633,9 +605,7 @@ def check_organization(data, next) -> str:
 
     cprint(table)
 
-    result = get_input(
-        "Press Enter to continue. or X to abort.", ["Enter", "x"], "Enter"
-    )
+    result = get_input("Press Enter to continue. or X to abort.", ["Enter", "x"], "Enter")
     if result.lower() == "x":
         raise Exception("Aborted by user.")
 
@@ -645,9 +615,7 @@ def check_organization(data, next) -> str:
 def check_admininistrative_privileges(data, next) -> str:
 
     cprint("\nCHECK ADMINISTRATIVE PRIVILEGES\n", style="bold underline")
-    cprint(
-        "This step checks to see if you have administrative privileges in the AWS account.\n"
-    )
+    cprint("This step checks to see if you have administrative privileges in the AWS account.\n")
     cprint(
         "You must have administrative privileges in the AWS account to deploy the core automation\n"
         "resources.  This is because the core automation resources are deployed using CloudFormation\n"
@@ -666,12 +634,8 @@ def check_admininistrative_privileges(data, next) -> str:
 
     cprint("You are good to go!\n", style="bold green")
 
-    cprint(
-        f"We will be installing the core automation resources in the automation account {current_account}.\n"
-    )
-    cprint(
-        "You may be asked to provide additional information about other AWS accounts in your organization.\n"
-    )
+    cprint(f"We will be installing the core automation resources in the automation account {current_account}.\n")
+    cprint("You may be asked to provide additional information about other AWS accounts in your organization.\n")
 
     result = get_input(
         "If you are ready, press Enter to continue or X to abort.",
@@ -687,9 +651,7 @@ def check_admininistrative_privileges(data, next) -> str:
 
 def check_profile(data, next) -> str:
     cprint("\nCHECK PROFILE\n", style="bold underline")
-    cprint(
-        "This step checks to see if you have the AWS profile set in your environment.\n"
-    )
+    cprint("This step checks to see if you have the AWS profile set in your environment.\n")
     try:
         supplied_profile = data.get(P_AWS_PROFILE)
 
@@ -698,9 +660,7 @@ def check_profile(data, next) -> str:
         data[P_REGION] = region = util.get_region()
 
     except Exception:
-        cprint(
-            "There was a problem.  Please check your AWS configuration and try again."
-        )
+        cprint("There was a problem.  Please check your AWS configuration and try again.")
         raise
 
     identity = data[P_IDENTITY]
@@ -708,15 +668,9 @@ def check_profile(data, next) -> str:
     data[P_CURRENT_ACCOUNT] = current_account = identity["Account"]
 
     if supplied_profile and supplied_profile != aws_profile:
-        cprint(
-            f'[red]WARNING:[/red] You supplied the AWS_PROFILE "{supplied_profile}" but the AWS CLI is using "{aws_profile}"'
-        )
-        cprint(
-            "You may want to check that the AWS_PROFILE is correct profile before continuing.\n"
-        )
-        result = get_input(
-            "Press Enter to continue or X to abort.", ["Enter", "x"], "Enter"
-        )
+        cprint(f'[red]WARNING:[/red] You supplied the AWS_PROFILE "{supplied_profile}" but the AWS CLI is using "{aws_profile}"')
+        cprint("You may want to check that the AWS_PROFILE is correct profile before continuing.\n")
+        result = get_input("Press Enter to continue or X to abort.", ["Enter", "x"], "Enter")
         if result.lower() == "x":
             raise Exception("Aborted by user.")
 
@@ -758,9 +712,7 @@ def check_profile(data, next) -> str:
         "[green]You are good to go![/green] Your current account is the same as your automation account. [yellow]Good! This is what we want.[/yellow]\n"
     )
 
-    result = get_input(
-        "Press Enter to continue or X to abort.", ["Enter", "x"], "Enter"
-    )
+    result = get_input("Press Enter to continue or X to abort.", ["Enter", "x"], "Enter")
     if result.lower() == "x":
         raise Exception("Aborted by user.")
 
@@ -769,9 +721,7 @@ def check_profile(data, next) -> str:
 
 def check_environment(data, next) -> str:
     cprint("\nCHECK ENVIRONMENT\n", style="bold underline")
-    cprint(
-        "This step checks to see if you have the two required environment variables set.\n"
-    )
+    cprint("This step checks to see if you have the two required environment variables set.\n")
     cprint("A scoping environment variable:\n")
     cprint(f'  - [cyan]{ENV_SCOPE}[/cyan] = ""\n')
     cprint(
@@ -797,15 +747,9 @@ def check_environment(data, next) -> str:
         "            This may or may not be the same account as your billing account (The billing\n"
         '            account is also referred to as the [bold]"Management Account"[bold]).\n'
     )
-    cprint(
-        "[yellow]We will ask about other AWS accounts in later processes of the installation.[white]\n"
-    )
-    cprint(
-        "[yellow]Note:[white] if you are setting up to run the core-automation docker container, these "
-    )
-    cprint(
-        "are the minimum environment variables that must be set in the docker run command.\n"
-    )
+    cprint("[yellow]We will ask about other AWS accounts in later processes of the installation.[white]\n")
+    cprint("[yellow]Note:[white] if you are setting up to run the core-automation docker container, these ")
+    cprint("are the minimum environment variables that must be set in the docker run command.\n")
     cprint("Values:")
 
     # Load the 3 environment variables from the os environment.
@@ -829,16 +773,10 @@ def check_environment(data, next) -> str:
 
     if cresult != "[green]OK[/green]" or aresult != "[green]OK[/green]":
         cprint("Please set the environment variables and try again.\n")
-        cprint(
-            "You may use a .env file if you wish. (I could ask you for them now, but, nah.. I'm making you set them up)\n"
-        )
-        raise Exception(
-            "Environment variables not set. Please setup the environment variables and try again."
-        )
+        cprint("You may use a .env file if you wish. (I could ask you for them now, but, nah.. I'm making you set them up)\n")
+        raise Exception("Environment variables not set. Please setup the environment variables and try again.")
 
-    result = get_input(
-        "Press Enter to continue or X to abort.", ["Enter", "x"], "Enter"
-    )
+    result = get_input("Press Enter to continue or X to abort.", ["Enter", "x"], "Enter")
     if result.lower() == "x":
         raise Exception("Aborted by user.")
 
@@ -847,17 +785,13 @@ def check_environment(data, next) -> str:
 
 def check_aws_cli(data, next) -> str:
     cprint("\nCHECK AWS CLI\n", style="bold underline")
-    cprint(
-        "This step checks to see that you have he AWS CLI installed and configured\n"
-    )
+    cprint("This step checks to see that you have he AWS CLI installed and configured\n")
 
     # check to see that the aws cli is installed in Windows and in Linux
 
     # run "aws --version" and capture the output
     try:
-        result = subprocess.run(
-            ["aws", "--version"], stdout=subprocess.PIPE, stderr=subprocess.PIPE
-        )
+        result = subprocess.run(["aws", "--version"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     except FileNotFoundError:
         raise Exception(
             "The AWS CLI is not installed.  Please install the AWS CLI and configure it with the appropriate permissions."
@@ -881,29 +815,19 @@ def welcome(data, next) -> str:
 
     cprint("\nWELCOME\n", style="bold underline")
     cprint("Welcome to the Core-Automation setup!\n")
-    cprint(
-        "This setup will guide you through setting up the Core-Automation platform.\n"
-    )
+    cprint("This setup will guide you through setting up the Core-Automation platform.\n")
 
     cprint("The platform is dividided into 4 parts:\n")
     cprint("1. Organization Setup")
     cprint("2. Automation Account Setup")
     cprint("3. Audit, Logging, and Compliance Setup")
     cprint("4. Security Monitoring Setup")
-    cprint(
-        "\nThis setup will perform configuration of item [underline]2 - Automation Account Setup.[/underline]\n"
-    )
-    cprint(
-        "Use the appropriate core command to setup the other parts of the platform.\n"
-    )
+    cprint("\nThis setup will perform configuration of item [underline]2 - Automation Account Setup.[/underline]\n")
+    cprint("Use the appropriate core command to setup the other parts of the platform.\n")
 
-    cprint(
-        "You will need to have the AWS CLI installed and configured with the appropriate permissions to run this command.\n"
-    )
+    cprint("You will need to have the AWS CLI installed and configured with the appropriate permissions to run this command.\n")
 
-    result = get_input(
-        "Press Enter to continue or X to abort.", ["Enter", "x"], "Enter"
-    )
+    result = get_input("Press Enter to continue or X to abort.", ["Enter", "x"], "Enter")
     if result.lower() == "x":
         raise Exception("Aborted by user.")
 

@@ -31,9 +31,7 @@ def list_domains(**kwargs):
         cprint(f"An error occurred: {e}", style="red")
 
 
-DOMAIN_TASKS: ExecuteCommandsType = {
-    "list": ("List the domains in the organization", list_domains)
-}
+DOMAIN_TASKS: ExecuteCommandsType = {"list": ("List the domains in the organization", list_domains)}
 
 
 def get_domain_command(subparsers) -> ExecuteCommandsType:

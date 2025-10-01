@@ -62,9 +62,7 @@ def get_execute_command(subparsers):
     parser.set_group_title(0, "Execute actions")
     parser.set_group_title(1, "Available options")
 
-    parser.add_argument(
-        "task", metavar="<task>", choices=ACTIONS.keys(), help="Action to perform"
-    )
+    parser.add_argument("task", metavar="<task>", choices=ACTIONS.keys(), help="Action to perform")
 
     parser.add_argument(
         "-p",

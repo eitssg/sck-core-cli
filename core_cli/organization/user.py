@@ -55,9 +55,7 @@ def ensure_user_can_assume_role(client_account, role_name, user_arn):  # noqa E5
         trust_policy["Statement"].append(new_statement)
 
     # Update the trust policy of the role
-    iam_client.update_assume_role_policy(
-        RoleName=role_name, PolicyDocument=json.dumps(trust_policy)
-    )
+    iam_client.update_assume_role_policy(RoleName=role_name, PolicyDocument=json.dumps(trust_policy))
 
     print(f"{user_arn} has been granted permission to assume {role_name}")
 
@@ -82,9 +80,7 @@ def add_user(**kwargs):
     print("User ARN       : ", user_arn)
 
     # Example usage
-    ensure_user_can_assume_role(
-        client_account=client_account, role_name=automation_role, user_arn=user_arn
-    )
+    ensure_user_can_assume_role(client_account=client_account, role_name=automation_role, user_arn=user_arn)
 
 
 def remove_user(**kwargs):
@@ -123,9 +119,7 @@ def get_user_tasks(parser) -> ExecuteCommandsType:
 
     subparser.add_argument("unit", choices=CHOICES.keys(), help="Task to perform")
 
-    subparser.add_argument(
-        "-p", "--profile", default="default", help="AWS profile", required=False
-    )
+    subparser.add_argument("-p", "--profile", default="default", help="AWS profile", required=False)
     subparser.add_argument(
         "-a",
         "--account",
@@ -133,9 +127,7 @@ def get_user_tasks(parser) -> ExecuteCommandsType:
         help="Organization account number",
         required=True,
     )
-    subparser.add_argument(
-        "-r", "--role", default="core-automation-role", help="Role name", required=False
-    )
+    subparser.add_argument("-r", "--role", default="core-automation-role", help="Role name", required=False)
 
     return {"user": (description, execute_user)}
 

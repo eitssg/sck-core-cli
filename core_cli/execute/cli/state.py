@@ -91,9 +91,7 @@ def generate_state(**kwargs) -> dict:
 
     cprint("Generated state template:")
 
-    fn = os.path.join(
-        os.path.dirname(os.path.abspath(__file__)), "data", "state_template.yaml"
-    )
+    fn = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data", "state_template.yaml")
     with open(fn, "r") as f:
         state = util.read_yaml(f)
 
@@ -110,9 +108,7 @@ def generate_state(**kwargs) -> dict:
         response = "y"
         if os.path.exists(filename):
             while True:
-                response = input(
-                    "File already exists.  Do you wish to overwrite? [y/n]: "
-                )
+                response = input("File already exists.  Do you wish to overwrite? [y/n]: ")
                 response = response.strip().lower()
                 if response not in ["y", "n"]:
                     cprint("Invalid response.  Either 'y' or 'n'")

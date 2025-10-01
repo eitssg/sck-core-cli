@@ -63,9 +63,7 @@ def print_organizational_units_tree(parent_id: str, level: int = 0):
 
     accounts = get_child_accounts(parent_id)
     for account in accounts:
-        print(
-            f"{indent}|   |-- Account: {account[1]} (ID: {account[0]}, Email: {account[2]})"
-        )
+        print(f"{indent}|   |-- Account: {account[1]} (ID: {account[0]}, Email: {account[2]})")
 
     ous = list_organizational_units(parent_id)
     for ou in ous:

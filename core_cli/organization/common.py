@@ -52,9 +52,7 @@ def exexecution_check(kwargs):
     cprint(f"   Account Email    : {account_info['Email']}")
 
     if org_info["AccountId"] != account_info["Id"]:
-        cprint(
-            f"\nYou are not in the master account. You are in account {account_info['Name']}."
-        )
+        cprint(f"\nYou are not in the master account. You are in account {account_info['Name']}.")
         cprint("Please run this command from the master account.\n")
         cprint("Perhaps choose a different AWS_PROFILE.\n")
         cprint("Aborted")

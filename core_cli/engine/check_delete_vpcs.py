@@ -33,9 +33,7 @@ def locate_account_name(check_name: str) -> bool:
         for zone in zones:
             zone_name = zone.get("name")
             alias = zone.get("alias")
-            if (zone_name and zone_name == check_name) or (
-                alias and alias == check_name
-            ):
+            if (zone_name and zone_name == check_name) or (alias and alias == check_name):
                 return True
     return False
 

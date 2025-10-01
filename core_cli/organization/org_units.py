@@ -72,9 +72,7 @@ def print_organizational_units_tree(parent_id: str, level: int = 0):
 
     accounts = get_child_accounts(parent_id)
     for account in accounts:
-        print(
-            f"{indent}|   |-- Account: {account[1]} (ID: {account[0]}, Email: {account[2]})"
-        )
+        print(f"{indent}|   |-- Account: {account[1]} (ID: {account[0]}, Email: {account[2]})")
 
     ous = list_organizational_units(parent_id)
     for ou in ous:
@@ -165,9 +163,7 @@ def execute_list(**kwargs):
     print(f"   Account Email: {account_info['Email']}")
 
     if org_info["AccountId"] != account_info["Id"]:
-        print(
-            f"\nYou are not in the master account. You are in account {account_info['Name']}."
-        )
+        print(f"\nYou are not in the master account. You are in account {account_info['Name']}.")
         print("Please run this command from the master account.\n")
         print("Aborted")
         return
@@ -181,9 +177,7 @@ def execute_list(**kwargs):
         print("Aborted")
         return
 
-    print(
-        "\nCongratulations! We have checked and you are an admin!\nYou may continue with the query.\n"
-    )
+    print("\nCongratulations! We have checked and you are an admin!\nYou may continue with the query.\n")
 
     print("Organizational Units Tree:\n")
 

@@ -76,9 +76,7 @@ def parse_args() -> dict:
         default=profile,
     )
 
-    subparsers = parser.add_subparsers(
-        title="Commands", dest="command", metavar="<command>", required=True
-    )
+    subparsers = parser.add_subparsers(title="Commands", dest="command", metavar="<command>", required=True)
 
     add_action_subparser(subparsers)
     add_state_subparser(subparsers)
