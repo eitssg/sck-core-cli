@@ -24,7 +24,7 @@ The parametrers are:
 It will call pyinstaller to generate a windows exeutable called core.exe which will be in the dist\core folder inside the
 project folder.
 
-The python project is a peotry project using poetry-dynamic-versioning.  As such a version number is automatically derrived
+The python project is a uv project using uv version.  As such a version number is automatically derrived
 from the git repository TAGS.  The tag must begin with a 'v'.  Example v1.0.4, v1.2.3.
 
 The version number must comply with PEP 440 style guide.

@@ -7,11 +7,11 @@ NexusRepoPath=${NexusRepoPath:-repository/files/core-automation}
 SourceDir=${SourceDir:-./core-automation/sck-mod-core}
 AppVersion=${AppVersion}
 
-# Fetch the version from Poetry if AppVersion is not provided
+# Fetch the version from UV  if AppVersion is not provided
 if [ -z $AppVersion ]; then
-  AppVersion=$(poetry version -s)
+  AppVersion=$(uv version --short)
   if [ $? -ne 0 ]; then
-      echo "Failed to get version from Poetry"
+      echo "Failed to get version from UV"
       exit 1
   fi
 fi
@@ -25,25 +25,25 @@ ParentDirectory=$(dirname $CurrentDirectory)
 # Change to the parent directory to run PyInstaller
 cd $ParentDirectory
 
-# Run Poetry update
-echo "Running Poetry update..."
-poetry update
+# Run UV update
+echo "Running UV update..."
+uv sync --all-extras
 if [ $? -ne 0 ]; then
   echo "Failed to update dependencies"
   exit 1
 fi
 
-echo "Poetry update completed successfully."
+echo "UV update completed successfully."
 
-# Run Poetry build
-echo "Running Poetry build..."
-poetry build
+# Run UV build
+echo "Running UV build..."
+uv build
 if [ $? -ne 0 ]; then
   echo "Failed to build."
   exit 1
 fi
 
-echo "Poetry build completed successfully."
+echo "UV build completed successfully."
 
 # Remove 'dist\core' folder if it exists
 DistCorePath="$ParentDirectory/dist/core"

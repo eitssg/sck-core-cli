@@ -22,16 +22,17 @@ function Invoke-CommandWithArgs {
     }
 }
 
-# Fetch the version from Poetry if AppVersion is not provided
+# Fetch the version from UV if AppVersion is not provided
 if (-not $AppVersion) {
     try {
-        $AppVersion = $(poetry version -s)
+        $AppVersion = $(uv version --short)
         if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($AppVersion)) {
-            Write-Error "Failed to get version from Poetry"
+            Write-Error "Failed to get version from UV"
             exit 1
         }
-    } catch {
-        Write-Error "Failed to get version from Poetry"
+    }
+    catch {
+        Write-Error "Failed to get version from UV"
         exit 1
     }
 }
@@ -45,17 +46,17 @@ $ParentDirectory = Split-Path -Parent $CurrentDirectory
 # Change to the parent directory to run PyInstaller
 Set-Location $ParentDirectory
 
-# Run Poetry update
-Write-Output "Running Poetry update..."
-Invoke-CommandWithArgs "poetry" @("update")
+# Run UV update
+Write-Output "Running UV update..."
+Invoke-CommandWithArgs "uv" @("update")
 
-Write-Output "Poetry update completed successfully."
+Write-Output "UV update completed successfully."
 
-# Run Poetry build
-Write-Output "Running Poetry build..."
-Invoke-CommandWithArgs "poetry" @("build")
+# Run UV build
+Write-Output "Running UV build..."
+Invoke-CommandWithArgs "uv" @("build")
 
-Write-Output "Poetry build completed successfully."
+Write-Output "UV build completed successfully."
 
 # Remove 'dist\core' folder if it exists
 $DistCorePath = Join-Path $ParentDirectory "dist\core"
@@ -125,7 +126,8 @@ Add-Type -AssemblyName 'System.IO.Compression.FileSystem'
 $zip = [System.IO.Compression.ZipFile]::Open($ZipFilePath, [System.IO.Compression.ZipArchiveMode]::Create)
 try {
     [System.IO.Compression.ZipFileExtensions]::CreateEntryFromFile($zip, $OutputFilePath, [System.IO.Path]::GetFileName($OutputFilePath), [System.IO.Compression.CompressionLevel]::Optimal)
-} finally {
+}
+finally {
     $zip.Dispose()
 }
 

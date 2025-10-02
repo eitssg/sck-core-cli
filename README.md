@@ -142,6 +142,13 @@ The above commands replace the core-automation/bin shell scripts and python scri
 
 #### step 1
 
+Install UV
+```bash
+curl -LsSf https://astral.sh/uv/install.sh | sh
+```
+
+#### step 2
+
 Clone the repositry:
 
 ```bash
@@ -151,16 +158,6 @@ python -m venv .venv
 ```
 There are 14 git submodules in this repo.  Sync all the submodules and pull all the subprojects
 
-#### step 2
-
-In IntelliJ or VSCode, select this python as the interpreter.  
-
-install poetry
-```bash
-source .venv/bin/activate
-pip install poetry poetry-dynamic-versioning
-```
-
 Next, evaluate the build tool scripts for windows (.ps1) powershell, or mac/linux (.sh) bash (not zsh or sh...bash)
 
 In vsCode or Intellij, add each of the 14 submodules to the workspace. (adding in the 'path')
@@ -168,7 +165,7 @@ In vsCode or Intellij, add each of the 14 submodules to the workspace. (adding i
 Switch all project TOML files to "develop" mode by setting project dependeces "develop=true" in the 14 TOML files.
 
 ```bash
-python ./prebuild.py
+uv run python ./prebuild.py
 ```
 
 If you wish to switch back to "publish" production mode, open `versions.json` and set the *develop* attribute to `false` and re-run the prebuild.py script
