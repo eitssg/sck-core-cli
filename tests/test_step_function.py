@@ -7,7 +7,7 @@ from core_framework.models import (
 )
 
 
-from core_execute.execute import step_function_client, generate_execution_name
+from core_runner.handler import handler
 
 
 @pytest.fixture
@@ -31,24 +31,17 @@ def test_step_function_client(task_payload: TaskPayload):
 
     region = "us-east-1"
 
-    client = step_function_client(region=region)
-
-    assert client is not None
+    dd = task_payload.deployment_details
 
     event = task_payload.model_dump()
 
-    executionName = generate_execution_name(task_payload)
-
-    execution_arn = "arn:aws:states:us-east-1:123456789012:stateMachine:my-state-machine"
-    result = client.start_execution(
-        name=executionName,
-        stateMachineArn=execution_arn,
-        input=event,
-    )
+    result = handler(event, None)
 
     assert result is not None
 
     print("Unit Test Execution Results:")
     print(json.dumps(result, indent=2))
+
+    execution_arn = f"arn:aws:states:{region}:123456789012:execution:sck-core-step-function-state-machine:exec-{dd.client}-{dd.portfolio}-{dd.environment}-1234"
 
     assert result["executionArn"] == execution_arn

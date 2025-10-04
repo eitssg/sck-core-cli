@@ -1,5 +1,8 @@
 # Copilot Instructions (Submodule: sck-core-cli)
 
+## Plan → Approval → Execute (Mandatory)
+All non-trivial CLI command or packaging edits require prior plan + explicit approval. Trivial Q&A may bypass.
+
 - Tech: Python package (CLI).
 - Precedence: Use this file first; otherwise, root: `../../.github/copilot-instructions.md`.
 - Conventions: Follow Python backend style in `../sck-core-ui/docs/backend-code-style.md` when interacting with S3/Lambda/etc.

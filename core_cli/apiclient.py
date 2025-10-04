@@ -4,17 +4,13 @@ import os
 import requests
 from fastapi.testclient import TestClient
 
+import core_logging as log
 import core_framework as util
+
 from core_framework.constants import ENV_API_HOST_URL, P_IDENTITY, P_CORRELATION_ID
 
-from core_api.api import get_app, generate_user_agent
-from core_api.api.tools import (
-    HDR_AUTHORIZATION,
-    HDR_X_CORRELATION_ID,
-    HDR_USER_AGENT,
-    HDR_CONTENT_TYPE,
-    HDR_ACCEPT,
-)
+from core_api.api import get_app
+from core_api.api.tools import generate_user_agent
 
 from core_cli import __version__
 
@@ -127,7 +123,7 @@ class APIClient:
             requests.Response: Response object.
         """
         self._set_defaults(kwargs)
-        if self.loca and self.api_client:
+        if self.local and self.api_client:
             return self.api_client.patch(url, data=data, **kwargs)
         return requests.patch(url, data=data, **kwargs)
 
@@ -174,18 +170,21 @@ class APIClient:
 
         """
         headers = {
-            HDR_USER_AGENT: self.user_agent,
-            HDR_ACCEPT: "application/json",
+            "User-Agent": self.user_agent,
+            "Accept": "application/json",
         }
+
+        correlation_id = log.get_correlation_id()
 
         if data:
             credentials = data.get(P_IDENTITY, {})
-            headers[HDR_AUTHORIZATION] = f"Bearer {credentials.get('SessionToken')}"
-            headers[HDR_X_CORRELATION_ID] = data.get(P_CORRELATION_ID, util.get_correlation_id())
-        else:
-            headers[HDR_X_CORRELATION_ID] = util.get_correlation_id()
+            headers["Authorization"] = f"Bearer {credentials.get('SessionToken')}"
+            correlation_id = data.get(P_CORRELATION_ID, correlation_id)
+
+        if correlation_id:
+            headers["X-Correlation-ID"] = correlation_id
 
         if content_type:
-            headers[HDR_CONTENT_TYPE] = content_type
+            headers["Content-Type"] = content_type
 
         return headers

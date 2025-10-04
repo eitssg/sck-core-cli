@@ -1,6 +1,7 @@
 import os
 import pytest
-from core_automation import register_module, parse_args, __version__
+
+from core_cli.core import __version__, parse_args, register_module
 
 
 def test_core_info():
@@ -74,10 +75,11 @@ def test_core_info_no_profile():
         "description": "This is the core module for the SCK.",
     }
 
-    name, description = register_module(**registration_data)
+    name, description, version = register_module(**registration_data)
 
-    assert registration_data["name"] == name
-    assert registration_data["description"] == description
+    assert registration_data.get("name") == name
+    assert registration_data.get("description") == description
+    assert registration_data.get("version") == version
 
     if "CLIENT" in os.environ:
         del os.environ["CLIENT"]
