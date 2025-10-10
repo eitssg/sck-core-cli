@@ -72,7 +72,7 @@ def run(args):
     tags = {}
     if os.path.exists(accounts_file):
         with open(accounts_file) as f:
-            client_accounts_file = yaml.safe_load(f.read())
+            client_accounts_file = util.read_yaml(f.read())
         portfolio_name = args.portfolio + "-" + args.branch
         print("Portfolio-name", portfolio_name)
         if portfolio_name in client_accounts_file:

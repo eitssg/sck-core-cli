@@ -144,6 +144,7 @@ def associate_zones(**kwargs):
 
     if len(branch) > 0:
         branch = f"-{branch}"
-    filename = f"hosted-zones{branch}.yaml"
+
+    # filename = f"hosted-zones{branch}.yaml"
 
     _process_client_vars(**kwargs, client_vars={})
