@@ -9,6 +9,7 @@ from core_framework.constants import (
     DD_CLIENT,
     DD_SCOPE,
     P_CLIENT,
+    P_CLIENT_ID,
     P_SCOPE,
     P_PORTFOLIO,
     P_APP,
@@ -136,7 +137,8 @@ def update_cdk_json(**kwargs):
     context = data[CTX_CONTEXT]
 
     scope = kwargs.get(P_SCOPE) or util.get_automation_scope()
-    client = kwargs.get(P_CLIENT) or util.get_client()
+    client = kwargs.get(P_CLIENT)
+    client_id = kwargs.get(P_CLIENT_ID)
     portfolio = kwargs.get(P_PORTFOLIO, "")
     app = kwargs.get(P_APP, "")
     branch = kwargs.get(P_BRANCH, "dev")
@@ -147,6 +149,7 @@ def update_cdk_json(**kwargs):
     context.update(
         {
             DD_SCOPE: scope,
+            DD_CLIENT_ID: client_id,
             DD_CLIENT: client,
             DD_PORTFOLIO: portfolio,
             DD_APP: app,
@@ -173,6 +176,7 @@ def write_component_file(**kwargs):
         return
 
     scope = kwargs.get(P_SCOPE) or util.get_automation_scope()
+    client_id = kwargs.get(P_CLIENT_ID) or util.get_client_id()
     client = kwargs.get(P_CLIENT) or util.get_client()
     portfolio = kwargs.get(P_PORTFOLIO, "")
     app = kwargs.get(P_APP, "")

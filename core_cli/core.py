@@ -13,8 +13,10 @@ import core_cli.environment as environment  # noqa
 
 import core_framework as util
 from core_framework.constants import (
+    ENV_CLIENT_ID,
     ENV_CLIENT,
     P_IDENTITY,
+    P_CLIENT_ID,
     P_CLIENT,
     P_AWS_PROFILE,
     P_CORRELATION_ID,
@@ -54,6 +56,7 @@ def parse_args(args: list[str], common_parser=None) -> dict:
     # whether they are in ../client-config/client-vars.yaml or ~/.core/config
 
     # We are doing this only to check if CLIENT environment variable is set.  For 'msg' generation below
+    client_id = util.get_client_id()
     client = util.get_client()
     aws_profile = util.get_aws_profile()
 
@@ -69,6 +72,8 @@ def parse_args(args: list[str], common_parser=None) -> dict:
         prog="core",
         commands_title="Available Core-Automation Commands",
     )
+
+    core_parser.set_defaults(**{P_CLIENT_ID: client_id, P_CLIENT: client, P_AWS_PROFILE: aws_profile})
 
     core_parser.add_argument(
         "-c",
@@ -117,7 +122,7 @@ def add_current_user_to_data(data):
     """populate the client_account information"""
     try:
 
-        data[P_CORRELATION_ID] = util.get_correlation_id()
+        data[P_CORRELATION_ID] = util.generate_task_payload()
         data[P_IDENTITY] = aws.get_identity()
         data[P_USERNAME] = get_iam_user_name()
         # data[P_USERNAME] = aws.get_username()

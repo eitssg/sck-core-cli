@@ -82,6 +82,7 @@ def add_client(**kwargs):
     # The json serializer in api_client.post() does not handle datetime or some other types properly
     data = {
         P_SCOPE: kwargs.get(P_SCOPE) or util.get_automation_scope(),
+        P_CLIENT_ID: kwargs.get(P_CLIENT_ID) or util.get_client_id(),
         P_CLIENT: kwargs.get(P_CLIENT) or util.get_client(),
         P_CLIENT_NAME: kwargs.get(P_CLIENT_NAME) or util.get_client_name(),
         P_CLIENT_REGION: kwargs.get(P_CLIENT_REGION) or util.get_client_region(),

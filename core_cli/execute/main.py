@@ -40,6 +40,7 @@ def generate_task_payload(**kwargs) -> TaskPayload:
 def parse_args() -> dict:
     """Parse the CLI arguments"""
 
+    client_id = util.get_client_id()
     client = util.get_client()
     mode = util.get_mode()
     profile = util.get_aws_profile()

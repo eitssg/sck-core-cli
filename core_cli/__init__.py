@@ -1,3 +1,5 @@
 """Commandline Interface Module"""
 
-__version__ = "0.1.2-pre.4+54d19a9"
+from importlib.metadata import version
+
+__version__ = version("sck-core-cli")

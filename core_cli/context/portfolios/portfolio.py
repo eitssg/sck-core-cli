@@ -44,7 +44,6 @@ def add_portfolio(**kwargs):
     cprint("Add Portfolio", style="bold underline")
 
     data = {
-        P_CLIENT: kwargs.get(P_CLIENT, util.get_client()),
         P_PORTFOLIO: kwargs.get(P_PORTFOLIO, None),
         P_PROJECT: kwargs.get(P_PROJECT, None),
         P_DOMAIN: kwargs.get(P_DOMAIN, None),
