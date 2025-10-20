@@ -47,8 +47,6 @@ from core_framework.constants import (
 
 from core_db.config import get_table_name
 
-from core_cli import __version__
-
 from .console import cprint, get_organization_info
 from .cmdparser import ExecuteCommandsType
 from .environment import print_environmnt
